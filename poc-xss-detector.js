@@ -85,8 +85,27 @@ function splitKey(key) {
   return key.split(".");
 }
 
-console.log("======== NEW RUN ========");
-console.log("======== NEW RUN ========");
+function isDangerouslySetInnerHtmlParameterValid(object) {
+  if (!Array.isArray(object)) return false;
+  if (object.length !== 1) return false;
+  uniqueNode = object[0];
+  if (!uniqueNode.hasOwnProperty("key")) return false;
+  key = uniqueNode["key"];
+  if (!uniqueNode["key"].hasOwnProperty("name")) return false;
+  if (key["name"] !== "__html") return false;
+  if (!uniqueNode.hasOwnProperty("value")) return false;
+  value = uniqueNode["value"];
+  if (!value.hasOwnProperty("type")) return false;
+  if (value["type"] !== "CallExpression") return false;
+  if (!value.hasOwnProperty("callee")) return false;
+  callee = value["callee"];
+  if (!callee.hasOwnProperty("type")) return false;
+  if (callee["type"] !== "MemberExpression") return false;
+  if (callee["object"]["name"] !== "DOMPurify") return false;
+  if (callee["property"]["name"] !== "sanitize") return false;
+  return true;
+}
+
 console.log("======== NEW RUN ========");
 
 glob(`${PROJECT_PATH}**/*.js`, { ignore: EXCLUDED_DIRECTORIES_NAMES }, function(
@@ -99,7 +118,9 @@ glob(`${PROJECT_PATH}**/*.js`, { ignore: EXCLUDED_DIRECTORIES_NAMES }, function(
       for await (const line of readLines({ input })) {
         XSS_WHISTLEBLOWER_KEYWORDS.some(xssKeywords => {
           if (line.includes(xssKeywords)) {
-            console.log("----------------------------------------------------------");
+            console.log(
+              "----------------------------------------------------------"
+            );
             console.log(file);
             const content = fs.readFileSync(file, "utf8");
             const ast = babelParser.parse(content, {
@@ -108,21 +129,45 @@ glob(`${PROJECT_PATH}**/*.js`, { ignore: EXCLUDED_DIRECTORIES_NAMES }, function(
             });
             flatAST = getFlatObject(ast);
             let xssKEY = findKeyJSONValue(flatAST, "dangerouslySetInnerHTML");
-            console.log(xssKEY);
             let keys = splitKey(xssKEY).slice(0, -2);
             keys.push("value");
             keys.push("expression");
-            if (getObjectNestedKeys(ast, keys)['type'] !== 'CallExpression') {
-              console.log('/!\\ Not XSS proof !')
-            } else {
-              keys.push("callee");
-              getObjectNestedKeys(ast, keys)['property'] && keys.push("property");
-              getObjectNestedKeys(ast, keys)['name'] && keys.push("name");
-              if (getObjectNestedKeys(ast, keys) !== 'sanitize') {
-                console.log('/!\\ Not XSS proof !')
-              } else {
-                console.log('DOMPurify seems to be used, GREAT !')
-              }
+            switch (getObjectNestedKeys(ast, keys)["type"]) {
+              case "CallExpression":
+                console.log("CallExpression");
+                keys.push("callee");
+                getObjectNestedKeys(ast, keys)["property"] &&
+                  keys.push("property");
+                getObjectNestedKeys(ast, keys)["name"] && keys.push("name");
+                if (getObjectNestedKeys(ast, keys) !== "sanitize") {
+                  console.log("/!\\ Not XSS proof !");
+                } else {
+                  console.log("DOMPurify seems to be used, GREAT !");
+                }
+                break;
+              case "Identifier":
+                console.log("Identifier");
+                console.log(getObjectNestedKeys(ast, keys));
+                break;
+              case "ObjectExpression":
+                if (
+                  isDangerouslySetInnerHtmlParameterValid(
+                    getObjectNestedKeys(ast, keys)["properties"]
+                  )
+                ) {
+                  console.log(
+                    "\x1b[32m%s\x1b[0m",
+                    "DOMPurify is correctly set!"
+                  );
+                } else {
+                  console.log(
+                    "\x1b[31m%s\x1b[0m",
+                    "DOMPurify is not correctly used, warning!"
+                  );
+                }
+                break;
+              default:
+                console.log("Aucun cas ne convient");
             }
           }
         });
