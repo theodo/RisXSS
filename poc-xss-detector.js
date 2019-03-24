@@ -70,7 +70,7 @@ function getFlatObject(object) {
 }
 
 function findKeyJSONValue(object, value) {
-  return Object.keys(object).find(key => object[key] === value);
+  return Object.keys(object).filter(key => object[key] === value);
 }
 
 function getObjectNestedKeys(object, nestedList) {
@@ -78,6 +78,22 @@ function getObjectNestedKeys(object, nestedList) {
     return object[nestedList[0]];
   } else {
     return getObjectNestedKeys(object[nestedList[0]], nestedList.slice(1));
+  }
+}
+
+function getObjectAndAddressNestedKeys(
+  object,
+  nestedList,
+  initialList = nestedList
+) {
+  if (nestedList.length == 1) {
+    return { object: object[nestedList[0]], address: initialList };
+  } else {
+    return getObjectAndAddressNestedKeys(
+      object[nestedList[0]],
+      nestedList.slice(1),
+      initialList
+    );
   }
 }
 
@@ -106,6 +122,30 @@ function isDangerouslySetInnerHtmlParameterValid(object) {
   return true;
 }
 
+function biggestCommonAddress(address1, address2) {
+  splittedAddress1 = address1.split(".");
+  splittedAddress2 = address2.split(".");
+  numberOfCommonKeys = 0;
+  for (
+    keyIndex = 0;
+    keyIndex < Math.min(splittedAddress1.length, splittedAddress2.length);
+    keyIndex++
+  ) {
+    if (splittedAddress1[keyIndex] === splittedAddress2[keyIndex]) {
+      numberOfCommonKeys++;
+    }
+  }
+  return splittedAddress1.slice(0, numberOfCommonKeys - 1);
+}
+
+function isDOMPurifyVariableValid(node) {
+  if (!node.hasOwnProperty("type")) return false;
+  if (node["type"] !== "VariableDeclarator") return false;
+  if (!node.hasOwnProperty("init")) return false;
+  if (!node["init"].hasOwnProperty("properties")) return false;
+  return isDangerouslySetInnerHtmlParameterValid(node["init"]["properties"]);
+}
+
 console.log("======== NEW RUN ========");
 
 glob(`${PROJECT_PATH}**/*.js`, { ignore: EXCLUDED_DIRECTORIES_NAMES }, function(
@@ -128,7 +168,7 @@ glob(`${PROJECT_PATH}**/*.js`, { ignore: EXCLUDED_DIRECTORIES_NAMES }, function(
               plugins: ["jsx", "flow", "classProperties"]
             });
             flatAST = getFlatObject(ast);
-            let xssKEY = findKeyJSONValue(flatAST, "dangerouslySetInnerHTML");
+            let xssKEY = findKeyJSONValue(flatAST, xssKeywords)[0];
             let keys = splitKey(xssKEY).slice(0, -2);
             keys.push("value");
             keys.push("expression");
@@ -140,14 +180,50 @@ glob(`${PROJECT_PATH}**/*.js`, { ignore: EXCLUDED_DIRECTORIES_NAMES }, function(
                   keys.push("property");
                 getObjectNestedKeys(ast, keys)["name"] && keys.push("name");
                 if (getObjectNestedKeys(ast, keys) !== "sanitize") {
-                  console.log("/!\\ Not XSS proof !");
+                  console.log(
+                    "\x1b[31m%s\x1b[0m",
+                    "WARNING, DOMPurify is not used (or not correctly)!"
+                  );
                 } else {
-                  console.log("DOMPurify seems to be used, GREAT !");
+                  console.log(
+                    "\x1b[32m%s\x1b[0m",
+                    "DOMPurify is correctly set!"
+                  );
                 }
                 break;
               case "Identifier":
-                console.log("Identifier");
-                console.log(getObjectNestedKeys(ast, keys));
+                identifierNode = getObjectNestedKeys(ast, keys);
+                if (!getObjectNestedKeys(ast, keys).hasOwnProperty("name"))
+                  return;
+                identifierName = getObjectNestedKeys(ast, keys)["name"];
+                potentialIdentifierAddresses = findKeyJSONValue(
+                  flatAST,
+                  identifierName
+                );
+                potentialIdentifierAddresses = potentialIdentifierAddresses.filter(
+                  address => !address.includes(keys.join("."))
+                );
+                if (
+                  isDOMPurifyVariableValid(
+                    getObjectNestedKeys(
+                      ast,
+                      biggestCommonAddress(
+                        potentialIdentifierAddresses[0],
+                        potentialIdentifierAddresses[1]
+                      )
+                    )
+                  )
+                ) {
+                  console.log(
+                    "\x1b[32m%s\x1b[0m",
+                    "DOMPurify is correctly set!"
+                  );
+                } else {
+                  console.log(
+                    "\x1b[31m%s\x1b[0m",
+                    "WARNING, DOMPurify is not used (or not correctly)!"
+                  );
+                }
                 break;
               case "ObjectExpression":
                 if (
@@ -162,7 +238,7 @@ glob(`${PROJECT_PATH}**/*.js`, { ignore: EXCLUDED_DIRECTORIES_NAMES }, function(
                 } else {
                   console.log(
                     "\x1b[31m%s\x1b[0m",
-                    "DOMPurify is not correctly used, warning!"
+                    "WARNING, DOMPurify is not used (or not correctly)!"
                   );
                 }
                 break;
