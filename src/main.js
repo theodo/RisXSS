@@ -261,13 +261,13 @@ keepDeepestCommonAddress = commonAddresses => {
  This implementation takes the closest node (compared to the position of the parameter of dangerouslySetInnerHTML) 
   corresponding to the identifier :
  For example, if we have : 
-  const html = '';
+  let html = '';
   html = '<p> something else </p>';   <- this assignation will be choosen
   dangerouslySetInnerHTML{html}
  
   Known issue of this implementation not yet corrected:
   If we have this : 
-    const html = '';
+    let html = '';
     html = '<p> something else </p>';   
     dangerouslySetInnerHTML{html}
     html = '<p>Bad choice</p>'  <- this assignation will be choosen
