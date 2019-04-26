@@ -4,7 +4,7 @@ const lodash = require("lodash");
 
 module.exports = {
   rules: {
-    "incorrect-use-of-dompurify": {
+    "potential-xss": {
       create: function(context) {
         /**
          * Check if the node use dangerouslySetInnerHTML
@@ -35,10 +35,6 @@ module.exports = {
           );
         }
 
-        function getPayloadObjectExpression(node) {
-          return lodash.get(node, "parent.value.expression");
-        }
-
         function isCallExpressionSafe(node) {
           return (
             lodash.get(node, "callee.object.name", "") === "DOMPurify" &&
@@ -46,48 +42,91 @@ module.exports = {
           );
         }
 
-        function checkObjectExpression(node) {
-          let objectExpression = getPayloadObjectExpression(node);
+        function isObjectExpressionSafe(node, isVariableTrusted) {
           let htmlProperty = lodash
-            .get(objectExpression, "properties", [])
+            .get(node, "properties", [])
             .filter(
               property => lodash.get(property, "key.name", "") === "__html"
             );
           if (htmlProperty.length !== 1) {
-            return context.report(
-              node,
-              "dangerouslySetInnerHTML is not used correctly, its argument should be of type { __html: ... }"
-            );
+            return false;
           }
-          // soit c'est un Identifier
           switch (htmlProperty[0].value.type) {
-            case "Identifier":
-              context.report(node, "Identifier detected");
-              break;
             case "CallExpression":
-              context.report(node, "CallExpression detected");
-              break;
+              return isCallExpressionSafe(htmlProperty[0].value);
+            case "Identifier":
+              return isVariableTrusted[htmlProperty[0].value.name];
             default:
-              context.report(node, "Unexpected value type detected");
-              break;
+              return false;
           }
-          // soit c'est un CallExpression avec appel de DOMPurify
-          context.report(node, htmlProperty[0].value.type);
         }
-
+        let isVariableTrusted = {};
         return {
+          VariableDeclarator: function(node) {
+            console.log("isTrusted : ", isVariableTrusted);
+            switch (node.init.type) {
+              case "Literal":
+                isVariableTrusted[node.id.name] = false;
+                break;
+              case "ObjectExpression":
+                isVariableTrusted[node.id.name] = isObjectExpressionSafe(
+                  node.init,
+                  isVariableTrusted
+                );
+                break;
+              case "CallExpression":
+                isVariableTrusted[node.id.name] = isCallExpressionSafe(
+                  node.init
+                );
+                break;
+              default:
+                isVariableTrusted[node.id.name] = false;
+                break;
+            }
+          },
+          AssignmentExpression: function(node) {
+            switch (node.right.type) {
+              case "Literal":
+                isVariableTrusted[node.left.name] = false;
+                break;
+              case "ObjectExpression":
+                isVariableTrusted[node.id.name] = isObjectExpressionSafe(
+                  node.init,
+                  isVariableTrusted
+                );
+                break;
+              case "CallExpression":
+                isVariableTrusted[node.id.name] = isCallExpressionSafe(node.id);
+                break;
+              default:
+                isVariableTrusted[node.id.name] = false;
+                break;
+            }
+          },
           JSXIdentifier: function(node) {
             if (isDangerouslySetInnerHTMLNode(node)) {
-              context.report(node, "detected dangerouslySetInnerHTML");
-              if (isPayloadObjectExpression(node)) {
-                context.report(node, "ObjectExpression type");
-                checkObjectExpression(node);
+              if (
+                isPayloadObjectExpression(node) &&
+                !isObjectExpressionSafe(
+                  node.parent.value.expression,
+                  isVariableTrusted
+                )
+              ) {
+                context.report(
+                  node,
+                  "XSS potentially found, unsecure use of dangerouslySetInnerHTML"
+                );
               }
-              if (isPayloadIdentifier(node)) {
-                // context.report(node, "Identifier type");
+              if (
+                isPayloadIdentifier(node) &&
+                !isVariableTrusted[node.parent.value.expression.name]
+              ) {
+                context.report(
+                  node,
+                  "XSS potentially found, unsecure use of dangerouslySetInnerHTML"
+                );
               }
             }
-            context.report(node, "----");
           }
         };
       }
