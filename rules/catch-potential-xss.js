@@ -70,13 +70,13 @@ const create = context => {
 					isVariableTrusted[node.left.name] = false;
 					break;
 				case 'ObjectExpression':
-					isVariableTrusted[node.id.name] = isObjectExpressionSafe(
-						node.init,
+					isVariableTrusted[node.left.name] = isObjectExpressionSafe(
+						node.right,
 						isVariableTrusted
 					);
 					break;
 				case 'CallExpression':
-					isVariableTrusted[node.id.name] = isCallExpressionSafe(node.id);
+					isVariableTrusted[node.left.name] = isCallExpressionSafe(node.right);
 					break;
 				default:
 					isVariableTrusted[node.id.name] = false;
