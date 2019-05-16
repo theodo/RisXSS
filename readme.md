@@ -10,27 +10,28 @@ $ yarn add eslint eslint-plugin-risxss --dev
 
 ## Usage
 
-Configure it in `package.json`.
+Configure it in `.eslintrc.js`.
 
-```json
-{
-	"name": "my-awesome-project",
-	"eslintConfig": {
-		"env": {
-			"es6": true
-		},
-		"parserOptions": {
-			"ecmaVersion": 2019,
-			"sourceType": "module"
-		},
-		"plugins": [
-			"risxss"
-		],
-		"rules": {
-			"risxss/catch-potential-xss": "error",
-		}
-	}
-}
+```js
+module.exports = {
+  env: {
+    browser: true,
+    es6: true
+  },
+  extends: "eslint:recommended",
+  parserOptions: {
+    ecmaFeatures: {
+      jsx: true
+    },
+    ecmaVersion: 2018,
+    sourceType: "module"
+  },
+  plugins: ["react", "risxss"],
+  rules: {
+    "risxss/potential-xss": "error"
+  }
+};
+
 ```
 
 ## Rules
