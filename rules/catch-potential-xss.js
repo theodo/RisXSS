@@ -79,7 +79,7 @@ const create = context => {
 					isVariableTrusted[node.left.name] = isCallExpressionSafe(node.right);
 					break;
 				default:
-					isVariableTrusted[node.id.name] = false;
+					isVariableTrusted[node.left.name] = false;
 					break;
 			}
 		},
