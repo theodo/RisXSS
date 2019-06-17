@@ -1,6 +1,6 @@
-# eslint-plugin-risxss
+# RisXSS
 
-> Various ESLint rules to prevent XSS
+Eradicate all XSS flaws of your React application using a single ESLint rule.
 
 ## Install
 
@@ -8,7 +8,7 @@
 $ yarn add eslint eslint-plugin-risxss --dev
 ```
 
-## Usage
+# Configuration
 
 Configure it in `.eslintrc.js`.
 
