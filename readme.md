@@ -1,4 +1,4 @@
-# RisXSS
+# 🛡RisXSS
 
 Eradicate all XSS flaws of your React application using a single ESLint rule.
 
