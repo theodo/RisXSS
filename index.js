@@ -14,10 +14,10 @@ module.exports = {
 				sourceType: 'module'
 			},
 			plugins: [
-				'new_risxss'
+				'risxss'
 			],
 			rules: {
-				'new_risxss/potential-xss': 'error'
+				'risxss/catch-potential-xss': 'error'
 			}
 		}
 	}
