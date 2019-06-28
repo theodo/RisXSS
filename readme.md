@@ -2,6 +2,8 @@
 
 Eradicate all XSS flaws of your React application using a single ESLint rule.
 
+![Example](https://media.giphy.com/media/kyF8BJQIlATkUNMpdk/giphy.gif)
+
 ## Install
 
 ```
