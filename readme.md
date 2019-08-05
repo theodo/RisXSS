@@ -18,17 +18,19 @@ module.exports = {
     browser: true,
     es6: true
   },
+  parser: '@typescript-eslint/parser',
   extends: "eslint:recommended",
   parserOptions: {
+    project: './tsconfig.json',
     ecmaFeatures: {
-      jsx: true
+      jsx: true,
     },
     ecmaVersion: 2018,
     sourceType: "module"
   },
-  plugins: ["react", "risxss"],
+  plugins: ["risxss"],
   rules: {
-    "risxss/potential-xss": "error"
+    "risxss/catch-potential-xss": "error",
   }
 };
 
