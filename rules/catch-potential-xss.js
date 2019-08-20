@@ -2,6 +2,8 @@
 
 const get = require('lodash.get');
 
+const DANGEROUS_MESSAGE = 'XSS potentially found, unsecure use of dangerouslySetInnerHTML';
+
 const payloadTypeDangerouslySetInnerHTML = node =>
 	get(node, 'parent.value.expression.type');
 
@@ -91,7 +93,7 @@ const create = context => {
 				) {
 					context.report(
 						node,
-						'XSS potentially found, unsecure use of dangerouslySetInnerHTML'
+						DANGEROUS_MESSAGE
 					);
 				}
 
@@ -101,7 +103,7 @@ const create = context => {
 				) {
 					context.report(
 						node,
-						'XSS potentially found, unsecure use of dangerouslySetInnerHTML'
+						DANGEROUS_MESSAGE
 					);
 				}
 			}
