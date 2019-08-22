@@ -45,27 +45,29 @@ const isObjectExpressionSafe = (node, isVariableTrusted) => {
 const create = context => {
 	const isVariableTrusted = {};
 	return {
-		VariableDeclarator(node) {
-			switch (node.init.type) {
-				case 'Literal':
-					isVariableTrusted[node.id.name] = false;
-					break;
-				case 'ObjectExpression':
-					isVariableTrusted[node.id.name] = isObjectExpressionSafe(
-						node.init,
-						isVariableTrusted
-					);
-					break;
-				case 'CallExpression':
-					isVariableTrusted[node.id.name] = isCallExpressionSafe(
-						node.init
-					);
-					break;
-				default:
-					isVariableTrusted[node.id.name] = false;
-					break;
-			}
-		},
+    VariableDeclarator(node) {
+      if (!node.init) {
+        isVariableTrusted[node.id.name] = false;
+      } else {
+        switch (node.init.type) {
+          case "Literal":
+            isVariableTrusted[node.id.name] = false;
+            break;
+          case "ObjectExpression":
+            isVariableTrusted[node.id.name] = isObjectExpressionSafe(
+              node.init,
+              isVariableTrusted
+            );
+            break;
+          case "CallExpression":
+            isVariableTrusted[node.id.name] = isCallExpressionSafe(node.init);
+            break;
+          default:
+            isVariableTrusted[node.id.name] = false;
+            break;
+        }
+      }
+    },
 		AssignmentExpression: node => {
 			switch (node.right.type) {
 				case 'Literal':
