@@ -32,7 +32,7 @@ module.exports = {
   },
   plugins: ["react", "risxss"],
   rules: {
-    "risxss/potential-xss": "error"
+    "risxss/catch-potential-xss": "error",
   }
 };
 ```
