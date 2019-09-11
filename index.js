@@ -1,4 +1,5 @@
 'use strict';
+
 const path = require('path');
 const importModules = require('import-modules');
 
@@ -15,7 +16,8 @@ module.exports = {
 			},
 			plugins: ['risxss'],
 			rules: {
-				'risxss/catch-potential-xss-react': 'error'
+				'risxss/catch-potential-xss-react': 'error',
+				'risxss/catch-potential-xss-vue': 'error'
 			}
 		}
 	}
