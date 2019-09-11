@@ -2,7 +2,8 @@
 
 const get = require('lodash.get');
 
-const DANGEROUS_MESSAGE = 'XSS potentially found, unsecure use of dangerouslySetInnerHTML';
+const DANGEROUS_MESSAGE =
+	'XSS potentially found, unsecure use of dangerouslySetInnerHTML';
 
 const payloadTypeDangerouslySetInnerHTML = node =>
 	get(node, 'parent.value.expression.type');
@@ -14,20 +15,21 @@ const isPayloadObjectExpression = node =>
 	payloadTypeDangerouslySetInnerHTML(node) === 'ObjectExpression';
 
 const isCallExpressionSafe = node =>
-	(get(node, 'callee.object.name', '') === 'DOMPurify' &&
-	get(node, 'callee.property.name', '') === 'sanitize');
+	get(node, 'callee.object.name', '') === 'DOMPurify' &&
+	get(node, 'callee.property.name', '') === 'sanitize';
 
 const isDangerouslySetInnerHTMLNode = node => {
 	return (
 		get(node, 'name', '') === 'dangerouslySetInnerHTML' &&
 		get(node, 'parent.type', '') === 'JSXAttribute' &&
-		get(node, 'parent.value.type', '') ===
-			'JSXExpressionContainer'
+		get(node, 'parent.value.type', '') === 'JSXExpressionContainer'
 	);
 };
 
 const isObjectExpressionSafe = (node, isVariableTrusted) => {
-	const htmlProperty = get(node, 'properties', []).filter(property => get(property, 'key.name', '') === '__html');
+	const htmlProperty = get(node, 'properties', []).filter(
+		property => get(property, 'key.name', '') === '__html'
+	);
 	if (htmlProperty.length !== 1) {
 		return false;
 	}
@@ -45,29 +47,29 @@ const isObjectExpressionSafe = (node, isVariableTrusted) => {
 const create = context => {
 	const isVariableTrusted = {};
 	return {
-    VariableDeclarator(node) {
-      if (!node.init) {
-        isVariableTrusted[node.id.name] = false;
-      } else {
-        switch (node.init.type) {
-          case "Literal":
-            isVariableTrusted[node.id.name] = false;
-            break;
-          case "ObjectExpression":
-            isVariableTrusted[node.id.name] = isObjectExpressionSafe(
-              node.init,
-              isVariableTrusted
-            );
-            break;
-          case "CallExpression":
-            isVariableTrusted[node.id.name] = isCallExpressionSafe(node.init);
-            break;
-          default:
-            isVariableTrusted[node.id.name] = false;
-            break;
-        }
-      }
-    },
+		VariableDeclarator(node) {
+			if (node.init) {
+				switch (node.init.type) {
+					case 'Literal':
+						isVariableTrusted[node.id.name] = false;
+						break;
+					case 'ObjectExpression':
+						isVariableTrusted[node.id.name] = isObjectExpressionSafe(
+							node.init,
+							isVariableTrusted
+						);
+						break;
+					case 'CallExpression':
+						isVariableTrusted[node.id.name] = isCallExpressionSafe(node.init);
+						break;
+					default:
+						isVariableTrusted[node.id.name] = false;
+						break;
+				}
+			} else {
+				isVariableTrusted[node.id.name] = false;
+			}
+		},
 		AssignmentExpression: node => {
 			switch (node.right.type) {
 				case 'Literal':
@@ -91,22 +93,19 @@ const create = context => {
 			if (isDangerouslySetInnerHTMLNode(node)) {
 				if (
 					isPayloadObjectExpression(node) &&
-						!isObjectExpressionSafe(node.parent.value.expression, isVariableTrusted)
+					!isObjectExpressionSafe(
+						node.parent.value.expression,
+						isVariableTrusted
+					)
 				) {
-					context.report(
-						node,
-						DANGEROUS_MESSAGE
-					);
+					context.report(node, DANGEROUS_MESSAGE);
 				}
 
 				if (
 					isPayloadIdentifier(node) &&
 					!isVariableTrusted[node.parent.value.expression.name]
 				) {
-					context.report(
-						node,
-						DANGEROUS_MESSAGE
-					);
+					context.report(node, DANGEROUS_MESSAGE);
 				}
 			}
 		}

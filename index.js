@@ -3,7 +3,7 @@ const path = require('path');
 const importModules = require('import-modules');
 
 module.exports = {
-	rules: importModules(path.resolve(__dirname, 'rules'), {camelize: false}),
+	rules: importModules(path.resolve(__dirname, 'rules'), { camelize: false }),
 	configs: {
 		recommended: {
 			env: {
@@ -13,11 +13,9 @@ module.exports = {
 				ecmaVersion: 2019,
 				sourceType: 'module'
 			},
-			plugins: [
-				'risxss'
-			],
+			plugins: ['risxss'],
 			rules: {
-				'risxss/catch-potential-xss': 'error'
+				'risxss/catch-potential-xss-react': 'error'
 			}
 		}
 	}

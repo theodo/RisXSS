@@ -1,6 +1,6 @@
 import test from 'ava';
 import avaRuleTester from 'eslint-ava-rule-tester';
-import rule from '../rules/catch-potential-xss';
+import rule from '../rules/catch-potential-xss-react';
 
 const ruleTester = avaRuleTester(test, {
 	parserOptions: {
@@ -15,11 +15,11 @@ const ruleTester = avaRuleTester(test, {
 function testCase(code) {
 	return {
 		code,
-		errors: [{ruleId: 'catch-potential-xss'}]
+		errors: [{ ruleId: 'catch-potential-xss-react' }]
 	};
 }
 
-ruleTester.run('catch-potential-xss', rule, {
+ruleTester.run('catch-potential-xss-react', rule, {
 	valid: [
 		testCase(`
 		const Example = () => {
