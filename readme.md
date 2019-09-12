@@ -14,53 +14,71 @@ $ yarn add eslint eslint-plugin-risxss --dev
 
 Configure it in `.eslintrc.js`.
 
-If your project only use javascript : 
+If your project only use javascript :
 
 ```js
 module.exports = {
-  env: {
-    browser: true,
-    es6: true
-  },
-  extends: "eslint:recommended",
-  parserOptions: {
-    ecmaFeatures: {
-      jsx: true
-    },
-    ecmaVersion: 2018,
-    sourceType: "module"
-  },
-  plugins: ["react", "risxss"],
-  rules: {
-    "risxss/catch-potential-xss": "error",
-  }
+	env: {
+		browser: true,
+		es6: true
+	},
+	extends: 'eslint:recommended',
+	parserOptions: {
+		ecmaFeatures: {
+			jsx: true
+		},
+		ecmaVersion: 2018,
+		sourceType: 'module'
+	},
+	plugins: ['react', 'risxss'],
+	rules: {
+		'risxss/catch-potential-xss': 'error'
+	}
 };
 ```
 
 If your project use TypeScript :
+
 ```js
 module.exports = {
-  env: {
-    browser: true,
-    es6: true
-  },
-  parser: '@typescript-eslint/parser',
-  extends: "eslint:recommended",
-  parserOptions: {
-    project: './tsconfig.json',
-    ecmaFeatures: {
-      jsx: true,
-    },
-    ecmaVersion: 2018,
-    sourceType: "module"
-  },
-  plugins: ["risxss"],
-  rules: {
-    "risxss/catch-potential-xss": "error",
-  }
+	env: {
+		browser: true,
+		es6: true
+	},
+	parser: '@typescript-eslint/parser',
+	extends: 'eslint:recommended',
+	parserOptions: {
+		project: './tsconfig.json',
+		ecmaFeatures: {
+			jsx: true
+		},
+		ecmaVersion: 2018,
+		sourceType: 'module'
+	},
+	plugins: ['risxss'],
+	rules: {
+		'risxss/catch-potential-xss': 'error'
+	}
 };
 ```
 
+If your project uses Vue.js
+
+```js
+module.exports = {
+	env: {
+		browser: true
+	},
+	extends: ['plugin:vue/essential'],
+	parserOptions: {
+		parser: 'babel-eslint'
+	},
+	plugins: ['vue', 'risxss'],
+	rules: {
+		'risxss/catch-potential-xss-vue': 'error'
+	}
+};
+```
 
 ## Rules
 
