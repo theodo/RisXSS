@@ -50,37 +50,106 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 		testCase(`
 		<template>
 			<div class="hello">
-				<div v-html="purifiedHtml"></div>
-				<div v-html="nestedHtml"></div>
+				<div v-html="message1"></div>
+				<div v-html="message2"></div>
 			</div>
 		</template>
 
 		<script>
 			import DOMPurify from 'dompurify';
-
 			const rawHtmlInput = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
-			const nestedHtml = DOMPurify.sanitize(rawHtmlInput);
-
+			const purifiedHtml = DOMPurify.sanitize(rawHtmlInput);
 			export default {
 				name: 'HelloWorld',
 				data () {
 					return {
-						purifiedHtml: DOMPurify.sanitize(rawHtmlInput),
-						nestedHtml: nestedHtml,
+						message1: DOMPurify.sanitize(rawHtmlInput),
+						message2: purifiedHtml,
 					}
 				}
 			}
 			</script>
+		`),
+		testCase(`
+		<template>
+			<div class="hello">
+				<div v-html="message"></div>
+			</div>
+		</template>
+
+		<script>
+			import DOMPurify from 'dompurify';
+			const rawHtmlInput = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
+			let processedInput = "";
+			processedInput = DOMPurify.sanitize(rawHtmlInput);
+			export default {
+				name: 'HelloWorld',
+				data () {
+					return {
+						message: processedInput,
+					}
+				}
+			}
+			</script>
+		`),
+		testCase(`
+		<template>
+			<div class="hello">
+				<div v-html="message"></div>
+			</div>
+		</template>
+
+		<script>
+			import DOMPurify from 'dompurify';
+			const rawHtmlObject = { userInput: '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>' };
+			let { userInput } = rawHtmlObject;
+			userInput = DOMPurify.sanitize(userInput);
+			export default {
+				name: 'HelloWorld',
+				data () {
+					return {
+						message: userInput,
+					}
+				}
+			}
+			</script>
+		`),
+		testCase(`
+		<template>
+			<div class="hello">
+				<div v-html="message"></div>
+			</div>
+		</template>
+
+		<script>
+			import DOMPurify from 'dompurify';
+			const rawHtml = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
+			let userInput;
+			userInput = { key: DOMPurify.sanitize(rawHtml) };
+			export default {
+				name: 'HelloWorld',
+				data () {
+					return {
+						message: userInput[key],
+					}
+				}
+			}
+		</script>
 		`)
 	],
 	invalid: [
 		testCase(`
 		<template>
 			<div class="content">
-				<div v-html="message" />
+				<div v-html="'message'" />
 			</div>
 		</template>
 		<script></script>
+		`),
+		testCase(`
+		<template>
+			<div v-html="" />
+		</template>
 		`),
 		testCase(`
 		<template>
@@ -105,27 +174,89 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 		testCase(`
 		<template>
 			<div class="hello">
-				<div v-html="purifiedHtml"></div>
-				<div v-html="nestedHtml"></div>
+				<div v-html="message1"></div>
+				<div v-html="message2"></div>
 			</div>
 		</template>
 
 		<script>
 			import DOMPurify from 'dompurify';
-
 			const rawHtmlInput = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
-			const nestedHtml = rawHtmlInput;
-
+			const pirifiedHtml = rawHtmlInput;
 			export default {
 				name: 'HelloWorld',
 				data () {
 					return {
-						purifiedHtml: DOMPurify.sanitize(rawHtmlInput),
-						nestedHtml: nestedHtml,
+						message1: DOMPurify.sanitize(rawHtmlInput),
+						message2: pirifiedHtml,
 					}
 				}
 			}
 			</script>
+		`),
+		testCase(`
+		<template>
+			<div class="hello">
+				<div v-html="message"></div>
+			</div>
+		</template>
+
+		<script>
+			import DOMPurify from 'dompurify';
+			const rawHtmlInput = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
+			let processedInput = "";
+			processedInput = rawHtmlInput;
+			export default {
+				name: 'HelloWorld',
+				data () {
+					return {
+						message: processedInput,
+					}
+				}
+			}
+			</script>
+		`),
+		testCase(`
+		<template>
+			<div class="hello">
+				<div v-html="message"></div>
+			</div>
+		</template>
+
+		<script>
+			import DOMPurify from 'dompurify';
+			const rawHtmlObject = { userInput: '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>' };
+			let { userInput } = rawHtmlObject;
+			export default {
+				name: 'HelloWorld',
+				data () {
+					return {
+						message: userInput,
+					}
+				}
+			}
+			</script>
+		`),
+		testCase(`
+		<template>
+			<div class="hello">
+				<div v-html="message"></div>
+			</div>
+		</template>
+
+		<script>
+			const rawHtml = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
+			let userInput;
+			userInput = { key: rawHtml };
+			export default {
+				name: 'HelloWorld',
+				data () {
+					return {
+						message: userInput[key],
+					}
+				}
+			}
+		</script>
 		`)
 	]
 });
