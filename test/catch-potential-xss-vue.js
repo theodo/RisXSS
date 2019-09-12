@@ -46,31 +46,6 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 		}
 		</script>
-		`),
-		testCase(`
-		<template>
-			<div class="hello">
-				<div v-html="purifiedHtml"></div>
-				<div v-html="nestedHtml"></div>
-			</div>
-		</template>
-
-		<script>
-			import DOMPurify from 'dompurify';
-
-			const rawHtmlInput = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
-			const nestedHtml = DOMPurify.sanitize(rawHtmlInput);
-
-			export default {
-				name: 'HelloWorld',
-				data () {
-					return {
-						purifiedHtml: DOMPurify.sanitize(rawHtmlInput),
-						nestedHtml: nestedHtml,
-					}
-				}
-			}
-			</script>
 		`)
 	],
 	invalid: [
@@ -101,31 +76,6 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 		}
 		</script>
-		`),
-		testCase(`
-		<template>
-			<div class="hello">
-				<div v-html="purifiedHtml"></div>
-				<div v-html="nestedHtml"></div>
-			</div>
-		</template>
-
-		<script>
-			import DOMPurify from 'dompurify';
-
-			const rawHtmlInput = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
-			const nestedHtml = rawHtmlInput;
-
-			export default {
-				name: 'HelloWorld',
-				data () {
-					return {
-						purifiedHtml: DOMPurify.sanitize(rawHtmlInput),
-						nestedHtml: nestedHtml,
-					}
-				}
-			}
-			</script>
 		`)
 	]
 });
