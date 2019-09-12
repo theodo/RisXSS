@@ -33,6 +33,16 @@ const isObjectExpressionSafe = (node, isVariableTrusted) => {
 	}
 };
 
+const isMemberExpressionSafe = (node, isVariableTrusted) => {
+	const { object, property } = node;
+	switch (property.type) {
+		case 'Literal':
+			return isObjectExpressionSafe(object, isVariableTrusted);
+		case 'Identifier':
+			return isVariableTrusted[property.name];
+	}
+};
+
 const create = context => {
 	const isVariableTrusted = {};
 	console.log(context.getFilename());
@@ -83,6 +93,12 @@ const create = context => {
 						break;
 					case 'CallExpression':
 						isVariableTrusted[name] = isCallExpressionSafe(
+							value,
+							isVariableTrusted
+						);
+						break;
+					case 'MemberExpression':
+						isVariableTrusted[name] = isMemberExpressionSafe(
 							value,
 							isVariableTrusted
 						);
