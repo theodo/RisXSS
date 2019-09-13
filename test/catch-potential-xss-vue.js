@@ -180,7 +180,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 		};
 		</script>
-		`)
+    `)
   ],
   invalid: [
     testCase(`

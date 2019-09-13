@@ -18,7 +18,7 @@ const isPropertySafe = (node, isVariableTrusted) => {
     case 'Identifier':
       return isVariableTrusted[node.name];
     case 'CallExpression':
-      return utils.isCallExpressionSafe(node, isVariableTrusted);
+      return utils.isCallExpressionSafe(node);
     case 'MemberExpression':
       return isMemberExpressionSafe(node, isVariableTrusted);
   }
@@ -126,7 +126,7 @@ const create = context => {
           isVariableTrusted[node.id.name] = false;
         }
       },
-      AssignmentExpression: node => {
+      AssignmentExpression(node) {
         switch (node.right.type) {
           case 'Literal':
             isVariableTrusted[node.left.name] = false;
