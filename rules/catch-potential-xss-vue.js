@@ -12,29 +12,15 @@ const isVHTML = node => {
 };
 
 const isPropertySafe = (node, isVariableTrusted) => {
-	const {
-		key: { name },
-		value
-	} = node;
-	switch (value.type) {
+	switch (node.type) {
 		case 'Literal':
-			isVariableTrusted[name] = false;
-			break;
+			return false;
 		case 'Identifier':
-			isVariableTrusted[name] = isVariableTrusted[value.name];
-			break;
+			return isVariableTrusted[node.name];
 		case 'CallExpression':
-			isVariableTrusted[name] = utils.isCallExpressionSafe(
-				value,
-				isVariableTrusted
-			);
-			break;
+			return utils.isCallExpressionSafe(node, isVariableTrusted);
 		case 'MemberExpression':
-			isVariableTrusted[name] = isMemberExpressionSafe(
-				value,
-				isVariableTrusted
-			);
-			break;
+			return isMemberExpressionSafe(node, isVariableTrusted);
 	}
 };
 
@@ -61,17 +47,11 @@ const isMemberExpressionSafe = (node, isVariableTrusted) => {
 const isArrayExpressionSafe = (node, isVariableTrusted) => {
 	const { elements } = node;
 	for (const element of elements) {
-		switch (element.type) {
-			case 'Literal':
-				return false;
-			case 'Identifier':
-				return isVariableTrusted[element.name];
-			case 'CallExpression':
-				return utils.isCallExpressionSafe(element, isVariableTrusted);
-			case 'MemberExpression':
-				return isMemberExpressionSafe(element, isVariableTrusted);
+		if (!isPropertySafe(element, isVariableTrusted)) {
+			return false;
 		}
 	}
+	return true;
 };
 
 const create = context => {
@@ -115,26 +95,7 @@ const create = context => {
 					key: { name },
 					value
 				} = node;
-				switch (value.type) {
-					case 'Literal':
-						isVariableTrusted[name] = false;
-						break;
-					case 'Identifier':
-						isVariableTrusted[name] = isVariableTrusted[value.name];
-						break;
-					case 'CallExpression':
-						isVariableTrusted[name] = utils.isCallExpressionSafe(
-							value,
-							isVariableTrusted
-						);
-						break;
-					case 'MemberExpression':
-						isVariableTrusted[name] = isMemberExpressionSafe(
-							value,
-							isVariableTrusted
-						);
-						break;
-				}
+				isVariableTrusted[name] = isPropertySafe(value, isVariableTrusted);
 			},
 			VariableDeclarator(node) {
 				if (node.init) {
