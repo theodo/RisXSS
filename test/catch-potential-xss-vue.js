@@ -3,23 +3,23 @@ import avaRuleTester from 'eslint-ava-rule-tester';
 import rule from '../rules/catch-potential-xss-vue';
 
 const ruleTester = avaRuleTester(test, {
-	parser: require.resolve('vue-eslint-parser'),
-	parserOptions: {
-		ecmaVersion: 2018,
-		sourceType: 'module'
-	}
+  parser: require.resolve('vue-eslint-parser'),
+  parserOptions: {
+    ecmaVersion: 2018,
+    sourceType: 'module'
+  }
 });
 
 function testCase(code) {
-	return {
-		code,
-		errors: [{ ruleId: 'catch-potential-xss-vue' }]
-	};
+  return {
+    code,
+    errors: [{ ruleId: 'catch-potential-xss-vue' }]
+  };
 }
 
 ruleTester.run('catch-potential-xss-vue', rule, {
-	valid: [
-		testCase(`
+  valid: [
+    testCase(`
 		<template>
 			<div class="content">
 				<div v-text="message" />
@@ -27,7 +27,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 		</template>
 		<script></script>
 	`),
-		testCase(`
+    testCase(`
 		<template>
 			<div class="content">
 				<div v-html="message" />
@@ -47,7 +47,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 		}
 		</script>
 		`),
-		testCase(`
+    testCase(`
 		<template>
 			<div class="hello">
 				<div v-html="message1"></div>
@@ -70,7 +70,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 			</script>
 		`),
-		testCase(`
+    testCase(`
 		<template>
 			<div class="hello">
 				<div v-html="message"></div>
@@ -92,7 +92,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 			</script>
 		`),
-		testCase(`
+    testCase(`
 		<template>
 			<div class="hello">
 				<div v-html="message"></div>
@@ -114,7 +114,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 			</script>
 		`),
-		testCase(`
+    testCase(`
 		<template>
 			<div class="hello">
 				<div v-html="message"></div>
@@ -136,7 +136,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 		</script>
 		`),
-		testCase(`
+    testCase(`
 		<template>
 			<div class="hello">
 				<div v-html="message"></div>
@@ -158,7 +158,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 		};
 		</script>
 		`),
-		testCase(`
+    testCase(`
 		<template>
 			<div class="hello">
 				<div v-html="message"></div>
@@ -181,9 +181,9 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 		};
 		</script>
 		`)
-	],
-	invalid: [
-		testCase(`
+  ],
+  invalid: [
+    testCase(`
 		<template>
 			<div class="content">
 				<div v-html="'message'" />
@@ -191,12 +191,12 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 		</template>
 		<script></script>
 		`),
-		testCase(`
+    testCase(`
 		<template>
 			<div v-html="" />
 		</template>
 		`),
-		testCase(`
+    testCase(`
 		<template>
 			<div class="content">
 				<div v-html="message" />
@@ -216,7 +216,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 		}
 		</script>
 		`),
-		testCase(`
+    testCase(`
 		<template>
 			<div class="hello">
 				<div v-html="message1"></div>
@@ -239,7 +239,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 			</script>
 		`),
-		testCase(`
+    testCase(`
 		<template>
 			<div class="hello">
 				<div v-html="message"></div>
@@ -261,7 +261,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 			</script>
 		`),
-		testCase(`
+    testCase(`
 		<template>
 			<div class="hello">
 				<div v-html="message"></div>
@@ -282,7 +282,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 			</script>
 		`),
-		testCase(`
+    testCase(`
 		<template>
 			<div class="hello">
 				<div v-html="message"></div>
@@ -303,7 +303,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 		</script>
 		`),
-		testCase(`
+    testCase(`
 		<template>
 			<div class="hello">
 				<div v-html="message"></div>
@@ -321,7 +321,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 		};
 		</script>`),
-		testCase(`
+    testCase(`
 		<template>
 			<div class="hello">
 				<div v-html="message"></div>
@@ -341,5 +341,5 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 		};
 		</script>
 		`)
-	]
+  ]
 });

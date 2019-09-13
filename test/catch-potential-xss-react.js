@@ -3,25 +3,25 @@ import avaRuleTester from 'eslint-ava-rule-tester';
 import rule from '../rules/catch-potential-xss-react';
 
 const ruleTester = avaRuleTester(test, {
-	parserOptions: {
-		ecmaVersion: 2018,
-		sourceType: 'module',
-		ecmaFeatures: {
-			jsx: true
-		}
-	}
+  parserOptions: {
+    ecmaVersion: 2018,
+    sourceType: 'module',
+    ecmaFeatures: {
+      jsx: true
+    }
+  }
 });
 
 function testCase(code) {
-	return {
-		code,
-		errors: [{ ruleId: 'catch-potential-xss-react' }]
-	};
+  return {
+    code,
+    errors: [{ ruleId: 'catch-potential-xss-react' }]
+  };
 }
 
 ruleTester.run('catch-potential-xss-react', rule, {
-	valid: [
-		testCase(`
+  valid: [
+    testCase(`
 		const Example = () => {
 			let dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
 			return (
@@ -33,7 +33,7 @@ ruleTester.run('catch-potential-xss-react', rule, {
 			);
 		};
 `),
-		testCase(`
+    testCase(`
 		const Example = () => {
 			let dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
 			const sanitizedObject = { __html: DOMPurify.sanitize(dangerousHtml) };
@@ -44,7 +44,7 @@ ruleTester.run('catch-potential-xss-react', rule, {
 			);
 		};
 	`),
-		testCase(`
+    testCase(`
 		const Example = () => {
 			const dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
 			const sanitizedHtml = DOMPurify.sanitize(dangerousHtml);
@@ -56,7 +56,7 @@ ruleTester.run('catch-potential-xss-react', rule, {
 			);
 		};
 	`),
-		testCase(`
+    testCase(`
 		const Example = () => {
 			const dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
 			let futureSanitizedHtml = "";
@@ -68,7 +68,7 @@ ruleTester.run('catch-potential-xss-react', rule, {
 			);
 		};
 	`),
-		testCase(`
+    testCase(`
 		const Example = () => {
 			const dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
 			let futureSanitizedObject = "";
@@ -80,9 +80,9 @@ ruleTester.run('catch-potential-xss-react', rule, {
 			);
 		};
 	`)
-	],
-	invalid: [
-		testCase(`
+  ],
+  invalid: [
+    testCase(`
 			const Example = () => {
 				let dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
 				return (
@@ -92,7 +92,7 @@ ruleTester.run('catch-potential-xss-react', rule, {
 				);
 			};
 		`),
-		testCase(`
+    testCase(`
 			const Example = () => {
 				const unsafeObject = { __html: "<img src=x onerror='javascript:alert(2)'>" };
 				return (
@@ -100,14 +100,14 @@ ruleTester.run('catch-potential-xss-react', rule, {
 				);
 			};
 		`),
-		testCase(`
+    testCase(`
 			const Example = () => {
 				return (
 					<div dangerouslySetInnerHTML={{}} />
 				);
 			};
 		`),
-		testCase(`
+    testCase(`
 			const Example = () => {
 				let futureUnsanitizedHtml = "";
 				futureUnsanitizedHtml = "<img src=x onerror='javascript:alert(2)'>"
@@ -118,5 +118,5 @@ ruleTester.run('catch-potential-xss-react', rule, {
 				);
 			};
 		`)
-	]
+  ]
 });
