@@ -1,5 +1,7 @@
 'use-strict';
 
+const get = require('lodash.get');
+
 module.exports = {
 	defineTemplateBodyVisitor(context, templateBodyVisitor, scriptVisitor) {
 		if (context.parserServices.defineTemplateBodyVisitor == null) {
@@ -13,6 +15,12 @@ module.exports = {
 		return context.parserServices.defineTemplateBodyVisitor(
 			templateBodyVisitor,
 			scriptVisitor
+		);
+	},
+	isCallExpressionSafe(node) {
+		return (
+			get(node, 'callee.object.name', '') === 'DOMPurify' &&
+			get(node, 'callee.property.name', '') === 'sanitize'
 		);
 	}
 };

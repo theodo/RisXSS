@@ -1,5 +1,6 @@
 'use strict';
 
+const utils = require('../utils');
 const get = require('lodash.get');
 
 const DANGEROUS_MESSAGE =
@@ -13,10 +14,6 @@ const isPayloadIdentifier = node =>
 
 const isPayloadObjectExpression = node =>
 	payloadTypeDangerouslySetInnerHTML(node) === 'ObjectExpression';
-
-const isCallExpressionSafe = node =>
-	get(node, 'callee.object.name', '') === 'DOMPurify' &&
-	get(node, 'callee.property.name', '') === 'sanitize';
 
 const isDangerouslySetInnerHTMLNode = node => {
 	return (
@@ -36,7 +33,7 @@ const isObjectExpressionSafe = (node, isVariableTrusted) => {
 
 	switch (htmlProperty[0].value.type) {
 		case 'CallExpression':
-			return isCallExpressionSafe(htmlProperty[0].value);
+			return utils.isCallExpressionSafe(htmlProperty[0].value);
 		case 'Identifier':
 			return isVariableTrusted[htmlProperty[0].value.name];
 		default:
@@ -60,7 +57,9 @@ const create = context => {
 						);
 						break;
 					case 'CallExpression':
-						isVariableTrusted[node.id.name] = isCallExpressionSafe(node.init);
+						isVariableTrusted[node.id.name] = utils.isCallExpressionSafe(
+							node.init
+						);
 						break;
 					default:
 						isVariableTrusted[node.id.name] = false;
@@ -82,7 +81,9 @@ const create = context => {
 					);
 					break;
 				case 'CallExpression':
-					isVariableTrusted[node.left.name] = isCallExpressionSafe(node.right);
+					isVariableTrusted[node.left.name] = utils.isCallExpressionSafe(
+						node.right
+					);
 					break;
 				default:
 					isVariableTrusted[node.left.name] = false;

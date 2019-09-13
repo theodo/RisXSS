@@ -11,26 +11,41 @@ const isVHTML = node => {
 	return false;
 };
 
-const isCallExpressionSafe = node =>
-	get(node, 'callee.object.name', '') === 'DOMPurify' &&
-	get(node, 'callee.property.name', '') === 'sanitize';
+const isPropertySafe = (node, isVariableTrusted) => {
+	const {
+		key: { name },
+		value
+	} = node;
+	switch (value.type) {
+		case 'Literal':
+			isVariableTrusted[name] = false;
+			break;
+		case 'Identifier':
+			isVariableTrusted[name] = isVariableTrusted[value.name];
+			break;
+		case 'CallExpression':
+			isVariableTrusted[name] = utils.isCallExpressionSafe(
+				value,
+				isVariableTrusted
+			);
+			break;
+		case 'MemberExpression':
+			isVariableTrusted[name] = isMemberExpressionSafe(
+				value,
+				isVariableTrusted
+			);
+			break;
+	}
+};
 
 const isObjectExpressionSafe = (node, isVariableTrusted) => {
-	const htmlProperty = get(node, 'properties', []).filter(
-		property => get(property, 'key.name', '') === '__html'
-	);
-	if (htmlProperty.length !== 1) {
-		return false;
-	}
-
-	switch (htmlProperty[0].value.type) {
-		case 'CallExpression':
-			return isCallExpressionSafe(htmlProperty[0].value);
-		case 'Identifier':
-			return isVariableTrusted[htmlProperty[0].value.name];
-		default:
+	const properties = get(node, 'properties', []);
+	for (const property of properties) {
+		if (!isPropertySafe(property, isVariableTrusted)) {
 			return false;
+		}
 	}
+	return true;
 };
 
 const isMemberExpressionSafe = (node, isVariableTrusted) => {
@@ -92,7 +107,7 @@ const create = context => {
 						isVariableTrusted[name] = isVariableTrusted[value.name];
 						break;
 					case 'CallExpression':
-						isVariableTrusted[name] = isCallExpressionSafe(
+						isVariableTrusted[name] = utils.isCallExpressionSafe(
 							value,
 							isVariableTrusted
 						);
@@ -118,7 +133,9 @@ const create = context => {
 							);
 							break;
 						case 'CallExpression':
-							isVariableTrusted[node.id.name] = isCallExpressionSafe(node.init);
+							isVariableTrusted[node.id.name] = utils.isCallExpressionSafe(
+								node.init
+							);
 							break;
 						default:
 							isVariableTrusted[node.id.name] = false;
@@ -140,7 +157,7 @@ const create = context => {
 						);
 						break;
 					case 'CallExpression':
-						isVariableTrusted[node.left.name] = isCallExpressionSafe(
+						isVariableTrusted[node.left.name] = utils.isCallExpressionSafe(
 							node.right
 						);
 						break;
