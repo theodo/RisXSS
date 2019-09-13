@@ -135,6 +135,51 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 				}
 			}
 		</script>
+		`),
+		testCase(`
+		<template>
+			<div class="hello">
+				<div v-html="message"></div>
+			</div>
+		</template>
+
+		<script>
+		import DOMPurify from "dompurify";
+		const table = [
+			DOMPurify.sanitize('<a onmouseover="alert(document.cookie)">Hover me!</a>')
+		];
+		export default {
+			name: "HelloWorld",
+			data() {
+				return {
+					message: table[0]
+				};
+			}
+		};
+		</script>
+		`),
+		testCase(`
+		<template>
+			<div class="hello">
+				<div v-html="message"></div>
+			</div>
+		</template>
+
+		<script>
+		import DOMPurify from "dompurify";
+		const rawHtml = DOMPurify.sanitize(
+			'<a onmouseover="alert(document.cookie)">Hover me!</a>'
+		);
+		const table = [rawHtml];
+		export default {
+			name: "HelloWorld",
+			data() {
+				return {
+					message: table[0]
+				};
+			}
+		};
+		</script>
 		`)
 	],
 	invalid: [
@@ -256,6 +301,44 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 					}
 				}
 			}
+		</script>
+		`),
+		testCase(`
+		<template>
+			<div class="hello">
+				<div v-html="message"></div>
+			</div>
+		</template>
+
+		<script>
+		const table = ['<a onmouseover="alert(document.cookie)">Hover me!</a>'];
+		export default {
+			name: "HelloWorld",
+			data() {
+				return {
+					message: table[0]
+				};
+			}
+		};
+		</script>`),
+		testCase(`
+		<template>
+			<div class="hello">
+				<div v-html="message"></div>
+			</div>
+		</template>
+
+		<script>
+		const rawHtml = '<a onmouseover="alert(document.cookie)">Hover me!</a>'
+		const table = [rawHtml];
+		export default {
+			name: "HelloWorld",
+			data() {
+				return {
+					message: table[0]
+				};
+			}
+		};
 		</script>
 		`)
 	]

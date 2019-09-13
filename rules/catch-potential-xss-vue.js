@@ -52,9 +52,25 @@ const isMemberExpressionSafe = (node, isVariableTrusted) => {
 	const { object, property } = node;
 	switch (property.type) {
 		case 'Literal':
-			return isObjectExpressionSafe(object, isVariableTrusted);
+			return isVariableTrusted[object.name];
 		case 'Identifier':
 			return isVariableTrusted[property.name];
+	}
+};
+
+const isArrayExpressionSafe = (node, isVariableTrusted) => {
+	const { elements } = node;
+	for (const element of elements) {
+		switch (element.type) {
+			case 'Literal':
+				return false;
+			case 'Identifier':
+				return isVariableTrusted[element.name];
+			case 'CallExpression':
+				return utils.isCallExpressionSafe(element, isVariableTrusted);
+			case 'MemberExpression':
+				return isMemberExpressionSafe(element, isVariableTrusted);
+		}
 	}
 };
 
@@ -135,6 +151,12 @@ const create = context => {
 						case 'CallExpression':
 							isVariableTrusted[node.id.name] = utils.isCallExpressionSafe(
 								node.init
+							);
+							break;
+						case 'ArrayExpression':
+							isVariableTrusted[node.id.name] = isArrayExpressionSafe(
+								node.init,
+								isVariableTrusted
 							);
 							break;
 						default:
