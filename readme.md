@@ -7,14 +7,14 @@ Eradicate all XSS flaws of your React application using a single ESLint rule.
 ## Install
 
 ```
-$ yarn add eslint eslint-plugin-risxss --dev
+$ yarn add eslint-plugin-risxss --dev
 ```
 
 # Configuration
 
 Configure it in `.eslintrc.js`.
 
-If your project only use javascript :
+If your project only uses React/Javascript :
 
 ```js
 module.exports = {
@@ -32,12 +32,12 @@ module.exports = {
 	},
 	plugins: ['react', 'risxss'],
 	rules: {
-		'risxss/catch-potential-xss': 'error'
+		'risxss/catch-potential-xss-react': 'error'
 	}
 };
 ```
 
-If your project use TypeScript :
+If your project uses React/TypeScript :
 
 ```js
 module.exports = {
@@ -57,7 +57,7 @@ module.exports = {
 	},
 	plugins: ['risxss'],
 	rules: {
-		'risxss/catch-potential-xss': 'error'
+		'risxss/catch-potential-xss-react': 'error'
 	}
 };
 ```
