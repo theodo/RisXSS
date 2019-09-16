@@ -82,7 +82,8 @@ module.exports = {
 
 ## Rules
 
-- [catch-potential-xss](docs/rules/catch-potential-xss.md) - Enforce the use of dompurify when using dangerouslySetInnerHtml
+- [catch-potential-xss-react](docs/rules/catch-potential-xss-react.md) - Enforce the use of dompurify when using dangerouslySetInnerHtml
+- [catch-potential-xss-vue](docs/rules/catch-potential-xss-vue.md) - Enforce the use of dompurify when using v-html
 
 ## License
 
