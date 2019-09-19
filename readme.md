@@ -1,18 +1,22 @@
 # 🛡RisXSS
 
-Eradicate all XSS flaws of your React application using a single ESLint rule.
+Eradicate all XSS flaws of your React or Vue application using a single ESLint rule.
 
 ![Example](https://media.giphy.com/media/kyF8BJQIlATkUNMpdk/giphy.gif)
 
-## Install
+## How to install RisXSS ?
+
+- First, use your favorite package manager to add eslint-plugin-risxss in your devDependencies, for example with yarn :
 
 ```
 $ yarn add eslint-plugin-risxss --dev
 ```
 
-# Configuration
+- Then, you just have to add the tailored rule for your projet (React or Vue) : 
+	- risxss/catch-potential-xss-react for React project
+	- risxss/catch-potential-xss-vue for Vue project
 
-Configure it in `.eslintrc.js`.
+To do so, add these lines in your eslint config, for instance if you use `.eslintrc.js` config file : 
 
 If your project only uses React/Javascript :
 
@@ -30,9 +34,9 @@ module.exports = {
 		ecmaVersion: 2018,
 		sourceType: 'module'
 	},
-	plugins: ['react', 'risxss'],
+	plugins: ['react', 'risxss'],      //  <<< add risxss in plugins
 	rules: {
-		'risxss/catch-potential-xss-react': 'error'
+		'risxss/catch-potential-xss-react': 'error'  //  <<< add this in rules
 	}
 };
 ```
@@ -55,9 +59,9 @@ module.exports = {
 		ecmaVersion: 2018,
 		sourceType: 'module'
 	},
-	plugins: ['risxss'],
+	plugins: ['risxss'],   //  <<< add risxss in plugins
 	rules: {
-		'risxss/catch-potential-xss-react': 'error'
+		'risxss/catch-potential-xss-react': 'error'   //  <<< add this in rules
 	}
 };
 ```
@@ -73,9 +77,9 @@ module.exports = {
 	parserOptions: {
 		parser: 'babel-eslint'
 	},
-	plugins: ['vue', 'risxss'],
+	plugins: ['vue', 'risxss'],   //  <<< add risxss in plugins
 	rules: {
-		'risxss/catch-potential-xss-vue': 'error'
+		'risxss/catch-potential-xss-vue': 'error'   //  <<< add this in rules
 	}
 };
 ```
