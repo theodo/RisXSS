@@ -1,6 +1,6 @@
 'use strict';
 
-const utils = require('../utils');
+const utils = require('./utils');
 const get = require('lodash.get');
 
 const DANGEROUS_MESSAGE = 'XSS potentially found: use of v-html.';
