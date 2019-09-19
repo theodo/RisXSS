@@ -18,7 +18,7 @@ $ yarn add eslint-plugin-risxss --dev
 
 To do so, add these lines in your eslint config, for instance if you use `.eslintrc.js` config file : 
 
-If your project only uses React/Javascript :
+If your project uses React/Javascript :
 
 ```js
 module.exports = {
