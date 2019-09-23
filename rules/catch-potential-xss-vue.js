@@ -101,6 +101,14 @@ const create = context => {
                     context.report(node, DANGEROUS_MESSAGE);
                   }
                   break;
+                case 'CallExpression':
+                  if (!utils.isCallExpressionSafe(expression, isVariableTrusted)) {
+                    context.report(node, DANGEROUS_MESSAGE);
+                  }
+                  break;
+                default:
+                  context.report(node, DANGEROUS_MESSAGE);
+                  break;
               }
             } else {
               context.report(node, DANGEROUS_MESSAGE);

@@ -379,6 +379,16 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 		};
 		</script>
-		`)
+    `),
+    testCase(`
+    <template>
+      <p v-html="$t('analyze.modal.freemium.results')" />
+    </template>
+    `),
+    testCase(`
+    <template>
+      <p class="pagetitle__subtitle" v-html="nl2br(subtitle)" />
+    </template>
+    `)
   ]
 });
