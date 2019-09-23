@@ -11,6 +11,10 @@ const isVHTML = node => {
   return false;
 };
 
+const isLibraryTrusted = (source) => {
+  return source === 'dompurify';
+};
+
 const isPropertySafe = (node, isVariableTrusted) => {
   switch (node.type) {
     case 'Literal':
@@ -18,7 +22,7 @@ const isPropertySafe = (node, isVariableTrusted) => {
     case 'Identifier':
       return isVariableTrusted[node.name];
     case 'CallExpression':
-      return utils.isCallExpressionSafe(node);
+      return utils.isCallExpressionSafe(node, isVariableTrusted);
     case 'MemberExpression':
       return isMemberExpressionSafe(node, isVariableTrusted);
   }
@@ -88,6 +92,13 @@ const create = context => {
     },
     // Event handlers for <script> or scripts
     {
+      ImportDeclaration(node) {
+        const { specifiers, source } = node;
+        for (const specifier of specifiers) {
+          const name = get(specifier, 'local.name', '');
+          isVariableTrusted[name] = name === '' ? false : isLibraryTrusted(source.value);
+        }
+      },
       Property(node) {
         const {
           key: { name },
@@ -109,7 +120,7 @@ const create = context => {
               break;
             case 'CallExpression':
               isVariableTrusted[node.id.name] = utils.isCallExpressionSafe(
-                node.init
+                node.init, isVariableTrusted
               );
               break;
             case 'ArrayExpression':
@@ -139,7 +150,7 @@ const create = context => {
             break;
           case 'CallExpression':
             isVariableTrusted[node.left.name] = utils.isCallExpressionSafe(
-              node.right
+              node.right, isVariableTrusted
             );
             break;
           default:

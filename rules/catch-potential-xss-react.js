@@ -33,7 +33,7 @@ const isObjectExpressionSafe = (node, isVariableTrusted) => {
 
   switch (htmlProperty[0].value.type) {
     case 'CallExpression':
-      return utils.isCallExpressionSafe(htmlProperty[0].value);
+      return utils.isCallExpressionSafe(htmlProperty[0].value, isVariableTrusted);
     case 'Identifier':
       return isVariableTrusted[htmlProperty[0].value.name];
     default:
@@ -58,7 +58,7 @@ const create = context => {
             break;
           case 'CallExpression':
             isVariableTrusted[node.id.name] = utils.isCallExpressionSafe(
-              node.init
+              node.init, isVariableTrusted
             );
             break;
           default:
@@ -82,7 +82,7 @@ const create = context => {
           break;
         case 'CallExpression':
           isVariableTrusted[node.left.name] = utils.isCallExpressionSafe(
-            node.right
+            node.right, isVariableTrusted
           );
           break;
         default:
