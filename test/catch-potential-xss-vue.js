@@ -49,6 +49,26 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 		`),
     testCase(`
 		<template>
+			<div class="content">
+				<div v-html="message" />
+			</div>
+		</template>
+
+		<script>
+		import { sanitize } from 'dompurify';
+		const rawHtmlInput = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
+		export default {
+			name: 'HelloWorld',
+			data () {
+				return {
+					message: sanitize(rawHtmlInput)
+				}
+			}
+		}
+		</script>
+		`),
+    testCase(`
+		<template>
 			<div class="hello">
 				<div v-html="message1"></div>
 				<div v-html="message2"></div>

@@ -17,10 +17,10 @@ module.exports = {
       scriptVisitor
     );
   },
-  isCallExpressionSafe(node) {
+  isCallExpressionSafe(node, isVariableTrusted) {
     return (
-      get(node, 'callee.object.name', '') === 'DOMPurify' &&
-      get(node, 'callee.property.name', '') === 'sanitize'
+      (get(node, 'callee.object.name', '') === 'DOMPurify' &&
+        get(node, 'callee.property.name', '') === 'sanitize') || isVariableTrusted[get(node, 'callee.name', '')]
     );
-  }
+  },
 };
