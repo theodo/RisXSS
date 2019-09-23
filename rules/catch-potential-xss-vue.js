@@ -25,8 +25,29 @@ const isPropertySafe = (node, isVariableTrusted) => {
       return utils.isCallExpressionSafe(node, isVariableTrusted);
     case 'MemberExpression':
       return isMemberExpressionSafe(node, isVariableTrusted);
+    case 'FunctionExpression':
+      return isFunctionExpressionSafe(node, isVariableTrusted);
+    default:
+      return false;
   }
 };
+
+const isFunctionExpressionSafe = (node, isVariableTrusted) => {
+  const functionNodes = node.body.body;
+  const returnStatements = functionNodes.filter(node => node.type === 'ReturnStatment');
+  for (const statment of returnStatements) {
+    switch (statment.argument.type) {
+      case 'CallExpression':
+        if (!utils.isCallExpressionSafe(node, isVariableTrusted)) {
+          return false;
+        }
+        break;
+      default:
+        return false;
+    }
+  }
+  return true;
+}
 
 const isObjectExpressionSafe = (node, isVariableTrusted) => {
   const properties = get(node, 'properties', []);
