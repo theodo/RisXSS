@@ -200,6 +200,25 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 		};
 		</script>
+    `),
+    testCase(`
+    <template>
+      <div class="postpreview">
+        <p class="postpreview__posttext" v-html="renderedPostText" />
+      </div>
+    </template>
+
+    <script>
+    import { sanitize } from "dompurify";
+    import { nl2br } from "~/services/FormatterHelper";
+    export default {
+      computed: {
+        renderedPostText() {
+          return sanitize(nl2br(this.postText));
+        }
+      }
+    };
+    </script>
     `)
   ],
   invalid: [
@@ -360,6 +379,16 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 			}
 		};
 		</script>
-		`)
+    `),
+    testCase(`
+    <template>
+      <p v-html="$t('analyze.modal.freemium.results')" />
+    </template>
+    `),
+    testCase(`
+    <template>
+      <p class="pagetitle__subtitle" v-html="nl2br(subtitle)" />
+    </template>
+    `)
   ]
 });

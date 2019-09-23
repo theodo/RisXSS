@@ -25,8 +25,29 @@ const isPropertySafe = (node, isVariableTrusted) => {
       return utils.isCallExpressionSafe(node, isVariableTrusted);
     case 'MemberExpression':
       return isMemberExpressionSafe(node, isVariableTrusted);
+    case 'FunctionExpression':
+      return isFunctionExpressionSafe(node, isVariableTrusted);
+    default:
+      return false;
   }
 };
+
+const isFunctionExpressionSafe = (node, isVariableTrusted) => {
+  const functionNodes = node.body.body;
+  const returnStatements = functionNodes.filter(node => node.type === 'ReturnStatement');
+  for (const statement of returnStatements) {
+    switch (statement.argument.type) {
+      case 'CallExpression':
+        if (!utils.isCallExpressionSafe(statement.argument, isVariableTrusted)) {
+          return false;
+        }
+        break;
+      default:
+        return false;
+    }
+  }
+  return true;
+}
 
 const isObjectExpressionSafe = (node, isVariableTrusted) => {
   const properties = get(node, 'properties', []);
@@ -79,6 +100,14 @@ const create = context => {
                   if (!isVariableTrusted[expression.name]) {
                     context.report(node, DANGEROUS_MESSAGE);
                   }
+                  break;
+                case 'CallExpression':
+                  if (!utils.isCallExpressionSafe(expression, isVariableTrusted)) {
+                    context.report(node, DANGEROUS_MESSAGE);
+                  }
+                  break;
+                default:
+                  context.report(node, DANGEROUS_MESSAGE);
                   break;
               }
             } else {
