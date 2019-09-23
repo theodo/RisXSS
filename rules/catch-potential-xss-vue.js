@@ -34,11 +34,11 @@ const isPropertySafe = (node, isVariableTrusted) => {
 
 const isFunctionExpressionSafe = (node, isVariableTrusted) => {
   const functionNodes = node.body.body;
-  const returnStatements = functionNodes.filter(node => node.type === 'ReturnStatment');
-  for (const statment of returnStatements) {
-    switch (statment.argument.type) {
+  const returnStatements = functionNodes.filter(node => node.type === 'ReturnStatement');
+  for (const statement of returnStatements) {
+    switch (statement.argument.type) {
       case 'CallExpression':
-        if (!utils.isCallExpressionSafe(node, isVariableTrusted)) {
+        if (!utils.isCallExpressionSafe(statement.argument, isVariableTrusted)) {
           return false;
         }
         break;
