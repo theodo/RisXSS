@@ -174,7 +174,6 @@ const create = context => {
           name = node.left.name;
         }
         if (!name) {
-          console.log("No name found in AssinementExpression.");
           return;
         }
         switch (node.right.type) {
