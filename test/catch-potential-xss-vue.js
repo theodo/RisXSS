@@ -219,6 +219,36 @@ ruleTester.run('catch-potential-xss-vue', rule, {
       }
     };
     </script>
+    `),
+    testCase(`
+    <template>
+      <div v-html="newsSanitizedText" />
+    </template>
+
+    <script>
+    import { sanitize } from "dompurify";
+
+    export default {
+      name: "NewsBar",
+      data() {
+        return {
+          newsSanitizedText: ""
+        };
+      },
+      async mounted() {
+        try {
+          this.newsData = await fetchApi("content", {
+            _locale: this.$i18n.locale
+          });
+          if (this.newsData) {
+            this.newsSanitizedText = sanitize(this.newsData.content);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    };
+    </script>
     `)
   ],
   invalid: [
