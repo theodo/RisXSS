@@ -167,23 +167,32 @@ const create = context => {
         }
       },
       AssignmentExpression(node) {
+        let name;
+        if (node.left.type === 'MemberExpression') {
+          name = node.left.property.name;
+        } else {
+          name = node.left.name;
+        }
+        if (!name) {
+          return;
+        }
         switch (node.right.type) {
           case 'Literal':
-            isVariableTrusted[node.left.name] = false;
+            isVariableTrusted[name] = false;
             break;
           case 'ObjectExpression':
-            isVariableTrusted[node.left.name] = isObjectExpressionSafe(
+            isVariableTrusted[name] = isObjectExpressionSafe(
               node.right,
               isVariableTrusted
             );
             break;
           case 'CallExpression':
-            isVariableTrusted[node.left.name] = utils.isCallExpressionSafe(
+            isVariableTrusted[name] = utils.isCallExpressionSafe(
               node.right, isVariableTrusted
             );
             break;
           default:
-            isVariableTrusted[node.left.name] = false;
+            isVariableTrusted[name] = false;
             break;
         }
       }
