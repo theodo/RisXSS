@@ -203,6 +203,31 @@ ruleTester.run('catch-potential-xss-vue', rule, {
     `),
     testCase(`
       <template>
+        <div class="hello">
+          <div v-html="messageTable[0]"></div>
+          <div v-html="messageTable[1]"></div>
+        </div>
+      </template>
+
+      <script>
+        import DOMPurify from "dompurify";
+        const rawHtml = DOMPurify.sanitize(
+          '<a onmouseover="alert(document.cookie)">Hover me!</a>'
+        );
+        const rawHtml2 = DOMPurify.sanitize('<div>Hello</div>');
+        const table = [rawHtml, rawHtml2];
+        export default {
+          name: "HelloWorld",
+          data() {
+            return {
+              messageTable: table
+            };
+          }
+        };
+      </script>
+    `),
+    testCase(`
+      <template>
         <div class="postpreview">
           <p class="postpreview__posttext" v-html="renderedPostText" />
         </div>
@@ -406,6 +431,27 @@ ruleTester.run('catch-potential-xss-vue', rule, {
           data() {
             return {
               message: table[0]
+            };
+          }
+        };
+      </script>
+    `),
+    testCase(`
+      <template>
+        <div class="hello">
+          <div v-html="messageTable[0]"></div>
+        </div>
+      </template>
+
+      <script>
+        import DOMPurify from "dompurify";
+        const rawHtml = '<a onmouseover="alert(document.cookie)">Hover me!</a>';
+        const table = [rawHtml];
+        export default {
+          name: "HelloWorld",
+          data() {
+            return {
+              messageTable: table
             };
           }
         };
