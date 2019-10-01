@@ -92,23 +92,8 @@ const create = context => {
           if (get(node, 'value.type', '') === 'VExpressionContainer') {
             const { expression } = value;
             if (expression && expression !== null) {
-              switch (expression.type) {
-                case 'Literal':
-                  context.report(node, DANGEROUS_MESSAGE);
-                  break;
-                case 'Identifier':
-                  if (!isVariableTrusted[expression.name]) {
-                    context.report(node, DANGEROUS_MESSAGE);
-                  }
-                  break;
-                case 'CallExpression':
-                  if (!utils.isCallExpressionSafe(expression, isVariableTrusted)) {
-                    context.report(node, DANGEROUS_MESSAGE);
-                  }
-                  break;
-                default:
-                  context.report(node, DANGEROUS_MESSAGE);
-                  break;
+              if (!isPropertySafe(expression, isVariableTrusted)) {
+                context.report(node, DANGEROUS_MESSAGE);
               }
             } else {
               context.report(node, DANGEROUS_MESSAGE);
