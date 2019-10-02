@@ -15,7 +15,7 @@ const isLibraryTrusted = (source) => {
   return source === 'dompurify';
 };
 
-const isPropertySafe = (node, isVariableTrusted) => {
+const isExpressionSafe = (node, isVariableTrusted) => {
   switch (node.type) {
     case 'Literal':
       return false;
@@ -27,6 +27,12 @@ const isPropertySafe = (node, isVariableTrusted) => {
       return isMemberExpressionSafe(node, isVariableTrusted);
     case 'FunctionExpression':
       return isFunctionExpressionSafe(node, isVariableTrusted);
+    case 'ArrowFunctionExpression':
+      return isFunctionExpressionSafe(node, isVariableTrusted);
+    case 'ObjectExpression':
+      return isObjectExpressionSafe(node, isVariableTrusted);
+    case 'ArrayExpression':
+      return isArrayExpressionSafe(node, isVariableTrusted);
     default:
       return false;
   }
@@ -52,7 +58,7 @@ const isFunctionExpressionSafe = (node, isVariableTrusted) => {
 const isObjectExpressionSafe = (node, isVariableTrusted) => {
   const properties = get(node, 'properties', []);
   for (const property of properties) {
-    if (!isPropertySafe(property, isVariableTrusted)) {
+    if (!isExpressionSafe(property, isVariableTrusted)) {
       return false;
     }
   }
@@ -72,7 +78,7 @@ const isMemberExpressionSafe = (node, isVariableTrusted) => {
 const isArrayExpressionSafe = (node, isVariableTrusted) => {
   const { elements } = node;
   for (const element of elements) {
-    if (!isPropertySafe(element, isVariableTrusted)) {
+    if (!isExpressionSafe(element, isVariableTrusted)) {
       return false;
     }
   }
@@ -92,7 +98,7 @@ const create = context => {
           if (get(node, 'value.type', '') === 'VExpressionContainer') {
             const { expression } = value;
             if (expression && expression !== null) {
-              if (!isPropertySafe(expression, isVariableTrusted)) {
+              if (!isExpressionSafe(expression, isVariableTrusted)) {
                 context.report(node, DANGEROUS_MESSAGE);
               }
             } else {
@@ -102,7 +108,7 @@ const create = context => {
             context.report(node, DANGEROUS_MESSAGE);
           }
         }
-      }
+      },
     },
     // Event handlers for <script> or scripts
     {
@@ -118,35 +124,11 @@ const create = context => {
           key: { name },
           value
         } = node;
-        isVariableTrusted[name] = isPropertySafe(value, isVariableTrusted);
+        isVariableTrusted[name] = isExpressionSafe(value, isVariableTrusted);
       },
       VariableDeclarator(node) {
         if (node.init) {
-          switch (node.init.type) {
-            case 'Literal':
-              isVariableTrusted[node.id.name] = false;
-              break;
-            case 'ObjectExpression':
-              isVariableTrusted[node.id.name] = isObjectExpressionSafe(
-                node.init,
-                isVariableTrusted
-              );
-              break;
-            case 'CallExpression':
-              isVariableTrusted[node.id.name] = utils.isCallExpressionSafe(
-                node.init, isVariableTrusted
-              );
-              break;
-            case 'ArrayExpression':
-              isVariableTrusted[node.id.name] = isArrayExpressionSafe(
-                node.init,
-                isVariableTrusted
-              );
-              break;
-            default:
-              isVariableTrusted[node.id.name] = false;
-              break;
-          }
+          isVariableTrusted[node.id.name] = isExpressionSafe(node.init, isVariableTrusted)
         } else {
           isVariableTrusted[node.id.name] = false;
         }
@@ -161,26 +143,8 @@ const create = context => {
         if (!name) {
           return;
         }
-        switch (node.right.type) {
-          case 'Literal':
-            isVariableTrusted[name] = false;
-            break;
-          case 'ObjectExpression':
-            isVariableTrusted[name] = isObjectExpressionSafe(
-              node.right,
-              isVariableTrusted
-            );
-            break;
-          case 'CallExpression':
-            isVariableTrusted[name] = utils.isCallExpressionSafe(
-              node.right, isVariableTrusted
-            );
-            break;
-          default:
-            isVariableTrusted[name] = false;
-            break;
-        }
-      }
+        isVariableTrusted[name] = isExpressionSafe(node.right, isVariableTrusted);
+      },
     }
   );
 };
