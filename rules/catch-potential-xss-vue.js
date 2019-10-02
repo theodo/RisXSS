@@ -39,20 +39,50 @@ const isExpressionSafe = (node, isVariableTrusted) => {
 };
 
 const isFunctionExpressionSafe = (node, isVariableTrusted) => {
-  const functionNodes = node.body.body;
-  const returnStatements = functionNodes.filter(node => node.type === 'ReturnStatement');
-  for (const statement of returnStatements) {
-    switch (statement.argument.type) {
-      case 'CallExpression':
-        if (!utils.isCallExpressionSafe(statement.argument, isVariableTrusted)) {
+  return areReturnsInStatementSafe(node.body, isVariableTrusted);
+}
+
+const areReturnsInStatementSafe = (node, isVariableTrusted) => {
+  if (!node) {
+    return true;
+  }
+  switch (node.type) {
+    case 'ReturnStatement':
+      return isReturnStatementSafe(node, isVariableTrusted);
+    case 'BlockStatement':
+      for(const consequent of node.body) {
+        if (!areReturnsInStatementSafe(consequent, isVariableTrusted)) {
           return false;
         }
-        break;
-      default:
-        return false;
-    }
+      }
+      return true
+    case 'IfStatement':
+      return areReturnsInStatementSafe(node.consequent, isVariableTrusted) && areReturnsInStatementSafe(node.alternate, isVariableTrusted)
+    case 'DoWhileStatement':
+    case 'WhileStatement':
+    case 'ForStatement':
+      return areReturnsInStatementSafe(node.body, isVariableTrusted)
+    case 'SwitchStatement':
+      for(const switchCase of node.cases) {
+        if (!areReturnsInStatementSafe(switchCase, isVariableTrusted)) {
+          return false;
+        }
+      }
+      return true
+    case 'SwitchCase':
+      for(const consequent of node.consequent) {
+        if (!areReturnsInStatementSafe(consequent, isVariableTrusted)) {
+          return false;
+        }
+      }
+      return true
+    default:
+      return true;
   }
-  return true;
+}
+
+const isReturnStatementSafe = (returnStatement, isVariableTrusted) => {
+  return isExpressionSafe(returnStatement.argument, isVariableTrusted);
 }
 
 const isObjectExpressionSafe = (node, isVariableTrusted) => {
