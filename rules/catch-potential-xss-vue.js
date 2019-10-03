@@ -31,6 +31,8 @@ const isExpressionSafe = (node, isVariableTrusted) => {
       return isFunctionExpressionSafe(node, isVariableTrusted);
     case 'ObjectExpression':
       return isObjectExpressionSafe(node, isVariableTrusted);
+    case 'Property':
+      return isExpressionSafe(node.value, isVariableTrusted);
     case 'ArrayExpression':
       return isArrayExpressionSafe(node, isVariableTrusted);
     default:
