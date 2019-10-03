@@ -150,7 +150,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
           name: 'HelloWorld',
           data () {
             return {
-              message: userInput[key],
+              message: userInput["key"],
             }
           }
         }
@@ -426,7 +426,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
           name: 'HelloWorld',
           data () {
             return {
-              message: userInput[key],
+              message: userInput["key"],
             }
           }
         }

@@ -99,6 +99,10 @@ const isMemberExpressionSafe = (node, isVariableTrusted) => {
   const { object, property } = node;
   switch (property.type) {
     case 'Literal':
+      // if the value is a string we are trying to access the property of an object, if not the value will be a number to access index of array
+      if(typeof(property.value) === 'string') {
+        return isVariableTrusted[property.value];
+      }
       return isVariableTrusted[object.name];
     case 'Identifier':
       return isVariableTrusted[property.name];
