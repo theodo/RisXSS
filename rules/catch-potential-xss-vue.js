@@ -2,6 +2,7 @@
 
 const utils = require('./utils');
 const get = require('lodash.get');
+const cloneDeep = require('lodash.clonedeep')
 
 const DANGEROUS_MESSAGE = 'XSS potentially found: use of v-html.';
 
@@ -15,6 +16,7 @@ const isLibraryTrusted = (source) => {
   return source === 'dompurify';
 };
 
+// warning, this function mutate the array isVarialeTrusted
 const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = '') => {
   if (!currentNode) {
     return;
@@ -285,18 +287,21 @@ const updateIsvariableTrusted = (isVariableTrusted, variableName, isAssignementT
 };
 
 const postProcessVariablesForVue = (isVariableTrusted) => {
-  delete isVariableTrusted['computed'];
-  delete isVariableTrusted['methods'];
-  for (var variableName in isVariableTrusted) {
+  let newIsVariableTrusted = cloneDeep(isVariableTrusted)
+  delete newIsVariableTrusted['computed'];
+  delete newIsVariableTrusted['methods'];
+  for (var variableName in newIsVariableTrusted) {
     if (variableName.startsWith('computed.')) {
-      isVariableTrusted[variableName.replace('computed.', '')] = isVariableTrusted[variableName];
-      delete isVariableTrusted[variableName];
+      newIsVariableTrusted[variableName.replace('computed.', '')] = newIsVariableTrusted[variableName];
+      delete newIsVariableTrusted[variableName];
     }
     if (variableName.startsWith('methods.')) {
-      isVariableTrusted[variableName.replace('methods.', '')] = isVariableTrusted[variableName];
-      delete isVariableTrusted[variableName];
+      newIsVariableTrusted[variableName.replace('methods.', '')] = newIsVariableTrusted[variableName];
+      delete newIsVariableTrusted[variableName];
     }
   }
+
+  return newIsVariableTrusted
 }
 
 // already seen variables are here to prevent the funcion to loop infinitely
@@ -322,8 +327,15 @@ const getTrustedCall = () => {
   return {'DOMPurify.sanitize': {value: true, dependsOn: []} }
 }
 
-const create = context => {
+const checkProgramNode = (node) => {
   const isVariableTrusted = getTrustedCall();
+  checkNode(node, isVariableTrusted);
+
+  return isVariableTrusted;
+}
+
+const create = context => {
+  let isVariableTrusted = {};
   // The script visitor is called first. Then the template visitor
   return utils.defineTemplateBodyVisitor(
     context,
@@ -351,8 +363,8 @@ const create = context => {
     // Event handlers for <script> or scripts
     {
       Program(node) {
-        checkNode(node, isVariableTrusted);
-        postProcessVariablesForVue(isVariableTrusted)
+        isVariableTrusted = checkProgramNode(node);
+        isVariableTrusted = postProcessVariablesForVue(isVariableTrusted)
       },
     }
   );
