@@ -229,7 +229,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
     testCase(`
       <template>
         <div>
-          <p v-html="functionWithMultipleReturn" />
+          <p v-html="functionWithMultipleReturn()" />
         </div>
       </template>
 
@@ -237,7 +237,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
         import DOMPurify from "dompurify";
         const message = DOMPurify.sanitize('Whao last return');
         export default {
-          computed: {
+          methods: {
             functionWithMultipleReturn() {
               switch (message) {
                 case 'Literal':
