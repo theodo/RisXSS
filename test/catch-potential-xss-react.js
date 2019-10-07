@@ -22,64 +22,64 @@ function testCase(code) {
 ruleTester.run('catch-potential-xss-react', rule, {
   valid: [
     testCase(`
-		const Example = () => {
-			let dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
-			return (
-				<div
-					dangerouslySetInnerHTML={{
-						__html: DOMPurify.sanitize(dangerousHtml)
-					}}
-				/>
-			);
-		};
-`),
+      const Example = () => {
+        let dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
+        return (
+          <div
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(dangerousHtml)
+            }}
+          />
+        );
+      };
+    `),
     testCase(`
-		const Example = () => {
-			let dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
-			const sanitizedObject = { __html: DOMPurify.sanitize(dangerousHtml) };
-			return (
-				<div
-					dangerouslySetInnerHTML={sanitizedObject}
-				/>
-			);
-		};
-	`),
+      const Example = () => {
+        let dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
+        const sanitizedObject = { __html: DOMPurify.sanitize(dangerousHtml) };
+        return (
+          <div
+            dangerouslySetInnerHTML={sanitizedObject}
+          />
+        );
+      };
+	  `),
     testCase(`
-		const Example = () => {
-			const dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
-			const sanitizedHtml = DOMPurify.sanitize(dangerousHtml);
-			const sanitizedObject = { __html: sanitizedHtml };
-			return (
-				<div
-					dangerouslySetInnerHTML={sanitizedObject}
-				/>
-			);
-		};
-	`),
+      const Example = () => {
+        const dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
+        const sanitizedHtml = DOMPurify.sanitize(dangerousHtml);
+        const sanitizedObject = { __html: sanitizedHtml };
+        return (
+          <div
+            dangerouslySetInnerHTML={sanitizedObject}
+          />
+        );
+      };
+	  `),
     testCase(`
-		const Example = () => {
-			const dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
-			let futureSanitizedHtml = "";
-			futureSanitizedHtml = DOMPurify.sanitize(dangerousHtml);
-			return (
-				<div
-					dangerouslySetInnerHTML={{__html: futureSanitizedHtml}}
-				/>
-			);
-		};
-	`),
+      const Example = () => {
+        const dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
+        let futureSanitizedHtml = "";
+        futureSanitizedHtml = DOMPurify.sanitize(dangerousHtml);
+        return (
+          <div
+            dangerouslySetInnerHTML={{__html: futureSanitizedHtml}}
+          />
+        );
+      };
+    `),
     testCase(`
-		const Example = () => {
-			const dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
-			let futureSanitizedObject = "";
-			futureSanitizedObject = { __html: DOMPurify.sanitize(dangerousHtml)};
-			return (
-				<div
-					dangerouslySetInnerHTML={futureSanitizedObject}
-				/>
-			);
-		};
-	`)
+      const Example = () => {
+        const dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
+        let futureSanitizedObject = "";
+        futureSanitizedObject = { __html: DOMPurify.sanitize(dangerousHtml)};
+        return (
+          <div
+            dangerouslySetInnerHTML={futureSanitizedObject}
+          />
+        );
+      };
+    `)
   ],
   invalid: [
     testCase(`
