@@ -44,6 +44,11 @@ const create = context => {
               context.report(node, DANGEROUS_MESSAGE);
             }
             break;
+          case 'CallExpression':
+            if(!utils.isVariableSafe(utils.getNameFromExpression(expression), isVariableTrusted, [])) {
+              context.report(node, DANGEROUS_MESSAGE);
+            }
+            break;
           default:
             const variableName = `${utils.getNameFromExpression(expression)}.__html`;
             if(!utils.isVariableSafe(variableName, isVariableTrusted, [])) {
