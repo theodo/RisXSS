@@ -6,110 +6,52 @@ const get = require('lodash.get');
 const DANGEROUS_MESSAGE =
   'XSS potentially found, unsecure use of dangerouslySetInnerHTML';
 
-const payloadTypeDangerouslySetInnerHTML = node =>
-  get(node, 'parent.value.expression.type');
-
-const isPayloadIdentifier = node =>
-  payloadTypeDangerouslySetInnerHTML(node) === 'Identifier';
-
-const isPayloadObjectExpression = node =>
-  payloadTypeDangerouslySetInnerHTML(node) === 'ObjectExpression';
-
-const isDangerouslySetInnerHTMLNode = node => {
-  return (
-    get(node, 'name', '') === 'dangerouslySetInnerHTML' &&
-    get(node, 'parent.type', '') === 'JSXAttribute' &&
-    get(node, 'parent.value.type', '') === 'JSXExpressionContainer'
-  );
-};
-
-const isObjectExpressionSafe = (node, isVariableTrusted) => {
-  const htmlProperty = get(node, 'properties', []).filter(
+const isInnerHTMLObjectExpressionSafe = (objectExpression, isVariableTrusted) => {
+  const htmlProperties = get(objectExpression, 'properties', []).filter(
     property => get(property, 'key.name', '') === '__html'
   );
-  if (htmlProperty.length !== 1) {
+  if (htmlProperties.length !== 1) {
     return false;
   }
+  const variableName = utils.getNameFromExpression(htmlProperties[0].value);
 
-  switch (htmlProperty[0].value.type) {
-    case 'CallExpression':
-      return utils.isCallExpressionSafe(htmlProperty[0].value, isVariableTrusted);
-    case 'Identifier':
-      return isVariableTrusted[htmlProperty[0].value.name];
-    default:
-      return false;
-  }
+  return utils.isVariableSafe(variableName, isVariableTrusted, []);
 };
 
+const isDangerouslySetInnerHTMLAttribute = (node) => {
+  return get(node, 'name.name', '') === 'dangerouslySetInnerHTML';
+}
+
 const create = context => {
-  const isVariableTrusted = {};
+  let isVariableTrusted = {};
   return {
-    VariableDeclarator(node) {
-      if (node.init) {
-        switch (node.init.type) {
+    Program(node) {
+      isVariableTrusted = utils.checkProgramNode(node);
+    },
+    JSXAttribute(node) {
+      if (isDangerouslySetInnerHTMLAttribute(node)) {
+        if (get(node, 'value.type', '') !== 'JSXExpressionContainer') {
+          context.report(node, DANGEROUS_MESSAGE);
+          return;
+        }
+        const expression = get(node, 'value.expression', '');
+        switch (expression.type) {
           case 'Literal':
-            isVariableTrusted[node.id.name] = false;
+            context.report(node, DANGEROUS_MESSAGE);
             break;
           case 'ObjectExpression':
-            isVariableTrusted[node.id.name] = isObjectExpressionSafe(
-              node.init,
-              isVariableTrusted
-            );
-            break;
-          case 'CallExpression':
-            isVariableTrusted[node.id.name] = utils.isCallExpressionSafe(
-              node.init, isVariableTrusted
-            );
+            if (!isInnerHTMLObjectExpressionSafe(expression, isVariableTrusted)) {
+              context.report(node, DANGEROUS_MESSAGE);
+            }
             break;
           default:
-            isVariableTrusted[node.id.name] = false;
-            break;
+            const variableName = `${utils.getNameFromExpression(expression)}.__html`;
+            if(!utils.isVariableSafe(variableName, isVariableTrusted, [])) {
+              context.report(node, DANGEROUS_MESSAGE);
+            }
         }
-      } else {
-        isVariableTrusted[node.id.name] = false;
       }
     },
-    AssignmentExpression: node => {
-      switch (node.right.type) {
-        case 'Literal':
-          isVariableTrusted[node.left.name] = false;
-          break;
-        case 'ObjectExpression':
-          isVariableTrusted[node.left.name] = isObjectExpressionSafe(
-            node.right,
-            isVariableTrusted
-          );
-          break;
-        case 'CallExpression':
-          isVariableTrusted[node.left.name] = utils.isCallExpressionSafe(
-            node.right, isVariableTrusted
-          );
-          break;
-        default:
-          isVariableTrusted[node.left.name] = false;
-          break;
-      }
-    },
-    JSXIdentifier: node => {
-      if (isDangerouslySetInnerHTMLNode(node)) {
-        if (
-          isPayloadObjectExpression(node) &&
-          !isObjectExpressionSafe(
-            node.parent.value.expression,
-            isVariableTrusted
-          )
-        ) {
-          context.report(node, DANGEROUS_MESSAGE);
-        }
-
-        if (
-          isPayloadIdentifier(node) &&
-          !isVariableTrusted[node.parent.value.expression.name]
-        ) {
-          context.report(node, DANGEROUS_MESSAGE);
-        }
-      }
-    }
   };
 };
 

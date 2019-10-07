@@ -150,7 +150,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
           name: 'HelloWorld',
           data () {
             return {
-              message: userInput[key],
+              message: userInput["key"],
             }
           }
         }
@@ -222,6 +222,41 @@ ruleTester.run('catch-potential-xss-vue', rule, {
             return {
               messageTable: table
             };
+          }
+        };
+      </script>
+    `),
+    testCase(`
+      <template>
+        <div>
+          <p v-html="functionWithMultipleReturn()" />
+        </div>
+      </template>
+
+      <script>
+        import DOMPurify from "dompurify";
+        const message = DOMPurify.sanitize('Whao last return');
+        export default {
+          methods: {
+            functionWithMultipleReturn() {
+              switch (message) {
+                case 'Literal':
+                  if (test = 4) {
+                    return DOMPurify.sanitize('4');
+                  }
+                  return DOMPurify.sanitize(test);
+                case 'Identifier':
+                  return DOMPurify.sanitize('Danger');
+                default:
+                  return DOMPurify.sanitize('Oups default not sanitized');
+              }
+              while (message.length > 0) {
+                if (this.postTest) {
+                  return DOMPurify.sanitize('I am a dangerous text');
+                }
+              }
+              return message;
+            }
           }
         };
       </script>
@@ -391,7 +426,7 @@ ruleTester.run('catch-potential-xss-vue', rule, {
           name: 'HelloWorld',
           data () {
             return {
-              message: userInput[key],
+              message: userInput["key"],
             }
           }
         }
@@ -453,6 +488,39 @@ ruleTester.run('catch-potential-xss-vue', rule, {
             return {
               messageTable: table
             };
+          }
+        };
+      </script>
+    `),
+    testCase(`
+      <template>
+        <div>
+          <p v-html="functionWithMultipleReturn" />
+        </div>
+      </template>
+
+      <script>
+        import DOMPurify from "dompurify";
+        const message = DOMPurify.sanitize('Whao last return');
+        export default {
+          computed: {
+            functionWithMultipleReturn() {
+              switch (message) {
+                case 'Literal':
+                  if (test = 4) {
+                    return '4';
+                  }
+                  return DOMPurify.sanitize(test);
+                default:
+                  return DOMPurify.sanitize('Oups default not sanitized');
+              }
+              while (message.length > 0) {
+                if (this.postTest) {
+                  return 'I am a dangerous text';
+                }
+              }
+              return message;
+            }
           }
         };
       </script>
