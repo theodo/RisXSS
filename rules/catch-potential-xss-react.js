@@ -26,35 +26,43 @@ const create = context => {
   let isVariableTrusted = {};
   return {
     Program(node) {
-      isVariableTrusted = utils.checkProgramNode(node);
+      try {
+        isVariableTrusted = utils.checkProgramNode(node);
+      } catch (error) {
+        context.report(node, `${utils.ERROR_MESSAGE} \n ${error.stack}`);
+      }
     },
     JSXAttribute(node) {
-      if (isDangerouslySetInnerHTMLAttribute(node)) {
-        if (get(node, 'value.type', '') !== 'JSXExpressionContainer') {
-          context.report(node, DANGEROUS_MESSAGE);
-          return;
-        }
-        const expression = get(node, 'value.expression', '');
-        switch (expression.type) {
-          case 'Literal':
+      try {
+        if (isDangerouslySetInnerHTMLAttribute(node)) {
+          if (get(node, 'value.type', '') !== 'JSXExpressionContainer') {
             context.report(node, DANGEROUS_MESSAGE);
-            break;
-          case 'ObjectExpression':
-            if (!isInnerHTMLObjectExpressionSafe(expression, isVariableTrusted)) {
+            return;
+          }
+          const expression = get(node, 'value.expression', '');
+          switch (expression.type) {
+            case 'Literal':
               context.report(node, DANGEROUS_MESSAGE);
-            }
-            break;
-          case 'CallExpression':
-            if(!utils.isVariableSafe(utils.getNameFromExpression(expression), isVariableTrusted, [])) {
-              context.report(node, DANGEROUS_MESSAGE);
-            }
-            break;
-          default:
-            const variableName = `${utils.getNameFromExpression(expression)}.__html`;
-            if(!utils.isVariableSafe(variableName, isVariableTrusted, [])) {
-              context.report(node, DANGEROUS_MESSAGE);
-            }
+              break;
+            case 'ObjectExpression':
+              if (!isInnerHTMLObjectExpressionSafe(expression, isVariableTrusted)) {
+                context.report(node, DANGEROUS_MESSAGE);
+              }
+              break;
+            case 'CallExpression':
+              if(!utils.isVariableSafe(utils.getNameFromExpression(expression), isVariableTrusted, [])) {
+                context.report(node, DANGEROUS_MESSAGE);
+              }
+              break;
+            default:
+              const variableName = `${utils.getNameFromExpression(expression)}.__html`;
+              if(!utils.isVariableSafe(variableName, isVariableTrusted, [])) {
+                context.report(node, DANGEROUS_MESSAGE);
+              }
+          }
         }
+      } catch (error) {
+        context.report(node, `${utils.ERROR_MESSAGE} \n ${error.stack}`);
       }
     },
   };

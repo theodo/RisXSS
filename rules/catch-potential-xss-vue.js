@@ -38,29 +38,37 @@ const create = context => {
     // Event handlers for <template>
     {
       VAttribute(node) {
-        const { key, value } = node;
-        if (isVHTML(key)) {
-          if (get(node, 'value.type', '') === 'VExpressionContainer') {
-            const { expression } = value;
-            if (expression && expression !== null) {
-              const variableName = utils.getNameFromExpression(expression);
-              if(!utils.isVariableSafe(variableName, isVariableTrusted, [])) {
+        try {
+          const { key, value } = node;
+          if (isVHTML(key)) {
+            if (get(node, 'value.type', '') === 'VExpressionContainer') {
+              const { expression } = value;
+              if (expression && expression !== null) {
+                const variableName = utils.getNameFromExpression(expression);
+                if(!utils.isVariableSafe(variableName, isVariableTrusted, [])) {
+                  context.report(node, DANGEROUS_MESSAGE);
+                }
+              } else {
                 context.report(node, DANGEROUS_MESSAGE);
               }
             } else {
               context.report(node, DANGEROUS_MESSAGE);
             }
-          } else {
-            context.report(node, DANGEROUS_MESSAGE);
           }
+        } catch (error) {
+          context.report(node, `${utils.ERROR_MESSAGE} \n ${error.stack}`);
         }
       },
     },
     // Event handlers for <script> or scripts
     {
       Program(node) {
-        isVariableTrusted = utils.checkProgramNode(node);
-        isVariableTrusted = postProcessVariablesForVue(isVariableTrusted)
+        try {
+          isVariableTrusted = utils.checkProgramNode(node);
+          isVariableTrusted = postProcessVariablesForVue(isVariableTrusted)
+        } catch (error) {
+          context.report(node, `${utils.ERROR_MESSAGE} \n ${error.stack}`);
+        }
       },
     }
   );

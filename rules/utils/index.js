@@ -1,5 +1,7 @@
 'use-strict';
 
+const ERROR_MESSAGE = "The linter couldn't lint the file properly, please open an issue on the RisXSS repo. \n The error is : ";
+
 const get = require('lodash.get');
 
 const isLibraryTrusted = (source) => {
@@ -313,6 +315,7 @@ const checkProgramNode = (node) => {
 }
 
 module.exports = {
+  ERROR_MESSAGE,
   defineTemplateBodyVisitor(context, templateBodyVisitor, scriptVisitor) {
     if (context.parserServices.defineTemplateBodyVisitor == null) {
       context.report({
