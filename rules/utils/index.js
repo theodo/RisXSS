@@ -40,7 +40,9 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
       break;
     case 'FunctionDeclaration':
       checkNode(currentNode.body, isVariableTrusted);
-      updateIsVariableTrusted(isVariableTrusted, currentNode.id.name, checkReturnsInStatement(currentNode.body, isVariableTrusted))
+      if (currentNode.id) {
+        updateIsVariableTrusted(isVariableTrusted, currentNode.id.name, checkReturnsInStatement(currentNode.body, isVariableTrusted));
+      }
       break;
     // Statements and Clauses
     case 'BlockStatement':
