@@ -134,6 +134,9 @@ const checkObjectExpression = (node, isVariableTrusted, variableNameToBeAssigned
   let returnedTrustObject = {value: true, dependsOn: []};
   const properties = get(node, 'properties', []);
   for(const property of properties) {
+    if (property.type !== 'ObjectProperty') {
+      continue;
+    }
     let propertyVariableName;
     if (variableNameToBeAssigned === '') {
       propertyVariableName = getNameFromExpression(property.key);
