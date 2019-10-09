@@ -139,7 +139,10 @@ const checkObjectExpression = (node, isVariableTrusted, variableNameToBeAssigned
   let returnedTrustObject = {value: true, dependsOn: []};
   const properties = get(node, 'properties', []);
   for(const property of properties) {
-    if (property.type === 'SpreadElement') {
+    if (property.type === 'SpreadElement' || property.type === 'ExperimentalSpreadProperty') {
+      continue;
+    }
+    if(!get(property, 'key', false) || !get(property, 'value', false)) {
       continue;
     }
     let propertyVariableName;
@@ -259,6 +262,9 @@ const getNameFromMemberExpression = (memberExpression) => {
 }
 
 const mergeTrustObjects = (firstObject, secondObject) => {
+  if (!firstObject || !secondObject) {
+    return firstObject || secondObject || {};
+  }
   let results = {};
   if (secondObject.value === false) {
     results.value = false;
