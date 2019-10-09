@@ -13,7 +13,7 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
   if (!currentNode) {
     return;
   }
-  switch (currentNode.type) {
+  switch (get(currentNode, 'type', '')) {
     case 'Program' :
       for(const nextNode of currentNode.body) {
         checkNode(nextNode, isVariableTrusted)
@@ -160,7 +160,7 @@ const checkReturnsInStatement = (currentNode, isVariableTrusted) => {
   if (!currentNode) {
     return returnedTrustObject;
   }
-  switch (currentNode.type) {
+  switch (get(currentNode, 'type', '')) {
     case 'ReturnStatement':
       return checkNode(currentNode.argument, isVariableTrusted);
     case 'BlockStatement':
@@ -211,7 +211,7 @@ const checkReturnsInStatement = (currentNode, isVariableTrusted) => {
 }
 
 const getNameFromExpression = (expression) => {
-  switch (expression.type) {
+  switch (get(expression, 'type', '')) {
     case 'Literal':
       return expression.value;
     case 'Identifier':
@@ -227,7 +227,7 @@ const getNameFromMemberExpression = (memberExpression) => {
   const { object, property } = memberExpression;
   let objectName = '';
   let propertyName = '';
-  switch (object.type) {
+  switch (get(object, 'type', '')) {
     case 'Literal':
       objectName = object.value;
       break;
@@ -238,7 +238,7 @@ const getNameFromMemberExpression = (memberExpression) => {
       objectName = getNameFromMemberExpression(object)
       break;
   }
-  switch (property.type) {
+  switch (get(property, 'type', '')) {
     case 'Literal':
       // if the value is a string we are trying to access the property of an object, if not the value will be a number to access index of array
       if(typeof(property.value) === 'string') {
