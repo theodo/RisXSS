@@ -3,6 +3,7 @@
 const ERROR_MESSAGE = "The linter couldn't lint the file properly, please open an issue on the RisXSS repo. \n The error is : ";
 
 const get = require('lodash.get');
+const union = require('lodash.union');
 
 const isLibraryTrusted = (source) => {
   return source === 'dompurify';
@@ -271,7 +272,7 @@ const mergeTrustObjects = (firstObject, secondObject) => {
     results.value = firstObject.value;
   }
   // To do : add unicity in the merge
-  results.dependsOn = firstObject.dependsOn.concat(secondObject.dependsOn);
+  results.dependsOn = union(firstObject.dependsOn, secondObject.dependsOn);
 
   return results;
 }
