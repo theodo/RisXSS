@@ -310,6 +310,26 @@ ruleTester.run('catch-potential-xss-vue', rule, {
         };
       </script>
     `),
+    testCase(`
+      <template>
+        <div class="content">
+          <div v-html="message" />
+        </div>
+      </template>
+
+      <script>
+        import DOMPurify from 'dompurify';
+        const rawHtmlInput = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
+        export default Vue.extend({
+          name: 'HelloWorld',
+          data () {
+            return {
+              message: DOMPurify.sanitize(rawHtmlInput)
+            }
+          }
+        })
+      </script>
+    `),
   ],
   invalid: [
     testCase(`
@@ -523,6 +543,26 @@ ruleTester.run('catch-potential-xss-vue', rule, {
             }
           }
         };
+      </script>
+    `),
+    testCase(`
+      <template>
+        <div class="content">
+          <div v-html="message" />
+        </div>
+      </template>
+
+      <script>
+        import DOMPurify from 'dompurify';
+        const rawHtmlInput = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
+        export default Vue.extend({
+          name: 'HelloWorld',
+          data () {
+            return {
+              message: rawHtmlInput
+            }
+          }
+        })
       </script>
     `),
     testCase(`

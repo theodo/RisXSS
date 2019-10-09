@@ -13,7 +13,7 @@ const isVHTML = node => {
 };
 
 const postProcessVariablesForVue = (isVariableTrusted) => {
-  let newIsVariableTrusted = cloneDeep(isVariableTrusted)
+  let newIsVariableTrusted = cloneDeep(isVariableTrusted);
   delete newIsVariableTrusted['computed'];
   delete newIsVariableTrusted['methods'];
   for (var variableName in newIsVariableTrusted) {
@@ -30,6 +30,25 @@ const postProcessVariablesForVue = (isVariableTrusted) => {
   return newIsVariableTrusted
 }
 
+const checkVueExportDefaultDeclaration = (node, isVariableTrusted) => {
+  if (get(node, 'declaration.type', '') !== 'CallExpression') {
+    return isVariableTrusted
+  }
+  if (utils.getNameFromExpression(get(node, 'declaration.callee', '')) !== 'Vue.extend') {
+    return isVariableTrusted
+  }
+  const callArguments = get(node, 'declaration.arguments', []);
+  if (!callArguments.length) {
+    return isVariableTrusted;
+  }
+  let newIsVariableTrusted = cloneDeep(isVariableTrusted);
+  // checkNode mutate the newIsVaraibleTrusted object (to be changed)
+  utils.checkNode(callArguments[0], newIsVariableTrusted);
+  newIsVariableTrusted = postProcessVariablesForVue(newIsVariableTrusted);
+
+  return newIsVariableTrusted;
+}
+
 const create = context => {
   let isVariableTrusted = {};
   // The script visitor is called first. Then the template visitor
@@ -38,31 +57,47 @@ const create = context => {
     // Event handlers for <template>
     {
       VAttribute(node) {
-        const { key, value } = node;
-        if (isVHTML(key)) {
-          if (get(node, 'value.type', '') === 'VExpressionContainer') {
-            const { expression } = value;
-            if (expression && expression !== null) {
-              const variableName = utils.getNameFromExpression(expression);
-              if(!utils.isVariableSafe(variableName, isVariableTrusted, [])) {
+        try {
+          const { key, value } = node;
+          if (isVHTML(key)) {
+            if (get(node, 'value.type', '') === 'VExpressionContainer') {
+              const { expression } = value;
+              if (expression && expression !== null) {
+                const variableName = utils.getNameFromExpression(expression);
+                if(!utils.isVariableSafe(variableName, isVariableTrusted, [])) {
+                  context.report(node, DANGEROUS_MESSAGE);
+                }
+              } else {
                 context.report(node, DANGEROUS_MESSAGE);
               }
             } else {
               context.report(node, DANGEROUS_MESSAGE);
             }
-          } else {
-            context.report(node, DANGEROUS_MESSAGE);
           }
+        } catch (error) {
+          context.report(node, `${utils.ERROR_MESSAGE} \n ${error.stack}`);
         }
       },
     },
     // Event handlers for <script> or scripts
     {
       Program(node) {
-        isVariableTrusted = utils.checkProgramNode(node);
-        isVariableTrusted = postProcessVariablesForVue(isVariableTrusted)
+        try {
+          isVariableTrusted = utils.checkProgramNode(node);
+          isVariableTrusted = postProcessVariablesForVue(isVariableTrusted);
+        } catch (error) {
+          context.report(node, `${utils.ERROR_MESSAGE} \n ${error.stack}`);
+        }
       },
-    }
+      // Check export default with Vue.extend()
+      ExportDefaultDeclaration(node) {
+        try {
+          isVariableTrusted = checkVueExportDefaultDeclaration(node, isVariableTrusted);
+        } catch (error) {
+          context.report(node, `${utils.ERROR_MESSAGE} \n ${error.stack}`);
+        }
+      },
+    },
   );
 };
 
