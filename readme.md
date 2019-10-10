@@ -90,6 +90,30 @@ module.exports = {
 - [catch-potential-xss-react](docs/rules/catch-potential-xss-react.md) - Enforce the use of dompurify when using dangerouslySetInnerHtml
 - [catch-potential-xss-vue](docs/rules/catch-potential-xss-vue.md) - Enforce the use of dompurify when using v-html
 
+## Configuring the rules
+
+Sometimes you have your own rules to prevent XSS and you don't use DOMPurify.sanitize on your inputs. You can add your own function name to the RisXSS whitelist by passing them as options.
+
+:warning: We still recommand using DOMPurify to sanitize your inputs :warning:
+
+```javascript
+module.exports = {
+    env: {
+        browser: true
+    },
+    extends: ['plugin:vue/essential'],
+    parserOptions: {
+        parser: 'babel-eslint'
+    },
+    plugins: ['vue', 'risxss'],   //  <<< add risxss in plugins
+    rules: {
+        'risxss/catch-potential-xss-vue': ['error', {
+            trustedCalls: ['mySanitizeFunction', 'sanitizeHelper.sanitize'] //  <<< define your anti XSS function here.
+        }]
+    }
+};
+```
+
 ## License
 
 MIT

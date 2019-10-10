@@ -4,6 +4,7 @@ const ERROR_MESSAGE = "The linter couldn't lint the file properly, please open a
 
 const get = require('lodash.get');
 const union = require('lodash.union');
+const cloneDeep = require('lodash.clonedeep')
 
 const isLibraryTrusted = (source) => {
   return source === 'dompurify';
@@ -332,15 +333,20 @@ const isVariableSafe = (variableName, isVariableTrusted, alreadySeenVariables) =
   return true;
 }
 
-const getTrustedCall = () => {
-  return {'DOMPurify.sanitize': {value: true, dependsOn: []} }
+const getTrustedCall = (options) => {
+  let trustedCalls = {'DOMPurify.sanitize': {value: true, dependsOn: []}}
+  for (callName of get(options, 'trustedCalls', [])) {
+    trustedCalls[callName] = {value: true, dependsOn: []};
+  }
+
+  return trustedCalls;
 }
 
-const checkProgramNode = (node) => {
-  const isVariableTrusted = getTrustedCall();
-  checkNode(node, isVariableTrusted);
+const checkProgramNode = (node, isVariableTrusted) => {
+  let newIsVariableTrusted = cloneDeep(isVariableTrusted);
+  checkNode(node, newIsVariableTrusted);
 
-  return isVariableTrusted;
+  return newIsVariableTrusted;
 }
 
 module.exports = {
@@ -363,4 +369,5 @@ module.exports = {
   isVariableSafe,
   checkProgramNode,
   checkNode,
+  getTrustedCall,
 };
