@@ -39,7 +39,7 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
       }
       break;
     case 'VariableDeclarator':
-      updateIsVariableTrusted(isVariableTrusted, currentNode.id.name, checkNode(currentNode.init, isVariableTrusted, currentNode.id.name))
+      checkVariableDeclarator(currentNode, isVariableTrusted);
       break;
     case 'FunctionDeclaration':
       checkNode(currentNode.body, isVariableTrusted);
@@ -123,6 +123,28 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
       return {value: undefined, dependsOn: []};
   }
 };
+
+const checkVariableDeclarator = (node, isVariableTrusted) => {
+  switch (get(node, 'id.type', '')) {
+    case 'Identifier' :
+      const variableName = get(node, 'id.name', '');
+      updateIsVariableTrusted(isVariableTrusted, variableName, checkNode(get(node, 'init', null), isVariableTrusted, variableName));
+      break;
+    case 'ObjectPattern':
+      const objectName = getNameFromExpression(get(node, 'init', null));
+      if (!objectName) {
+        return;
+      }
+      const properties = get(node, 'id.properties', []);
+      for(const property of properties) {
+        const propertyName = get(property, 'key.name', null);
+        if (propertyName) {
+          updateIsVariableTrusted(isVariableTrusted, propertyName, {value: undefined, dependsOn: [`${objectName}.${propertyName}`]});
+        }
+      }
+      break;
+  }
+}
 
 const checkArrayExpression = (node, isVariableTrusted) => {
   let returnedTrustObject = {value: true, dependsOn: []};

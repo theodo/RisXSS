@@ -151,6 +151,18 @@ ruleTester.run('catch-potential-xss-react', rule, {
     testCase(`
       const Example = () => {
         const dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
+        const messageObject = {html: DOMPurify.sanitize(dangerousHtml), otherMessage: 'not sanitized'};
+        const {html, otherMessage} = messageObject
+        return (
+          <div
+            dangerouslySetInnerHTML={{__html: html}}
+          />
+        );
+      };
+    `),
+    testCase(`
+      const Example = () => {
+        const dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
         const messageArray = [DOMPurify.sanitize(dangerousHtml), DOMPurify.sanitize('not sanitized')];
         return (
           <div
@@ -244,6 +256,18 @@ ruleTester.run('catch-potential-xss-react', rule, {
         return (
           <div
             dangerouslySetInnerHTML={{__html: messageObject.html}}
+          />
+        );
+      };
+    `),
+    testCase(`
+      const Example = () => {
+        const dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
+        const messageObject = {html: DOMPurify.sanitize(dangerousHtml), otherMessage: 'not sanitized'};
+        const {html, otherMessage} = messageObject
+        return (
+          <div
+            dangerouslySetInnerHTML={{__html: otherMessage}}
           />
         );
       };
