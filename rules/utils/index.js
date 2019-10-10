@@ -4,6 +4,7 @@ const ERROR_MESSAGE = "The linter couldn't lint the file properly, please open a
 
 const get = require('lodash.get');
 const union = require('lodash.union');
+const cloneDeep = require('lodash.clonedeep')
 
 const isLibraryTrusted = (source) => {
   return source === 'dompurify';
@@ -39,7 +40,7 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
       }
       break;
     case 'VariableDeclarator':
-      updateIsVariableTrusted(isVariableTrusted, currentNode.id.name, checkNode(currentNode.init, isVariableTrusted, currentNode.id.name))
+      checkVariableDeclarator(currentNode, isVariableTrusted);
       break;
     case 'FunctionDeclaration':
       checkNode(currentNode.body, isVariableTrusted);
@@ -123,6 +124,28 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
       return {value: undefined, dependsOn: []};
   }
 };
+
+const checkVariableDeclarator = (node, isVariableTrusted) => {
+  switch (get(node, 'id.type', '')) {
+    case 'Identifier' :
+      const variableName = get(node, 'id.name', '');
+      updateIsVariableTrusted(isVariableTrusted, variableName, checkNode(get(node, 'init', null), isVariableTrusted, variableName));
+      break;
+    case 'ObjectPattern':
+      const objectName = getNameFromExpression(get(node, 'init', null));
+      if (!objectName) {
+        return;
+      }
+      const properties = get(node, 'id.properties', []);
+      for(const property of properties) {
+        const propertyName = get(property, 'key.name', null);
+        if (propertyName) {
+          updateIsVariableTrusted(isVariableTrusted, propertyName, {value: undefined, dependsOn: [`${objectName}.${propertyName}`]});
+        }
+      }
+      break;
+  }
+}
 
 const checkArrayExpression = (node, isVariableTrusted) => {
   let returnedTrustObject = {value: true, dependsOn: []};
@@ -310,15 +333,20 @@ const isVariableSafe = (variableName, isVariableTrusted, alreadySeenVariables) =
   return true;
 }
 
-const getTrustedCall = () => {
-  return {'DOMPurify.sanitize': {value: true, dependsOn: []} }
+const getTrustedCall = (options) => {
+  let trustedCalls = {'DOMPurify.sanitize': {value: true, dependsOn: []}}
+  for (callName of get(options, 'trustedCalls', [])) {
+    trustedCalls[callName] = {value: true, dependsOn: []};
+  }
+
+  return trustedCalls;
 }
 
-const checkProgramNode = (node) => {
-  const isVariableTrusted = getTrustedCall();
-  checkNode(node, isVariableTrusted);
+const checkProgramNode = (node, isVariableTrusted) => {
+  let newIsVariableTrusted = cloneDeep(isVariableTrusted);
+  checkNode(node, newIsVariableTrusted);
 
-  return isVariableTrusted;
+  return newIsVariableTrusted;
 }
 
 module.exports = {
@@ -341,4 +369,5 @@ module.exports = {
   isVariableSafe,
   checkProgramNode,
   checkNode,
+  getTrustedCall,
 };

@@ -50,7 +50,11 @@ const checkVueExportDefaultDeclaration = (node, isVariableTrusted) => {
 }
 
 const create = context => {
-  let isVariableTrusted = {};
+  let options = {}
+  if(context.options.length) {
+    options = context.options[0]
+  }
+  let isVariableTrusted = utils.getTrustedCall(options);
   // The script visitor is called first. Then the template visitor
   return utils.defineTemplateBodyVisitor(
     context,
@@ -83,7 +87,7 @@ const create = context => {
     {
       Program(node) {
         try {
-          isVariableTrusted = utils.checkProgramNode(node);
+          isVariableTrusted = utils.checkProgramNode(node, isVariableTrusted);
           isVariableTrusted = postProcessVariablesForVue(isVariableTrusted);
         } catch (error) {
           context.report(node, `${utils.ERROR_MESSAGE} \n ${error.stack}`);

@@ -121,28 +121,6 @@ ruleTester.run('catch-potential-xss-vue', rule, {
 
       <script>
         import DOMPurify from 'dompurify';
-        const rawHtmlObject = { userInput: '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>' };
-        let { userInput } = rawHtmlObject;
-        userInput = DOMPurify.sanitize(userInput);
-        export default {
-          name: 'HelloWorld',
-          data () {
-            return {
-              message: userInput,
-            }
-          }
-        }
-      </script>
-    `),
-    testCase(`
-      <template>
-        <div class="hello">
-          <div v-html="message"></div>
-        </div>
-      </template>
-
-      <script>
-        import DOMPurify from 'dompurify';
         const rawHtml = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
         let userInput;
         userInput = { key: DOMPurify.sanitize(rawHtml) };
@@ -325,6 +303,36 @@ ruleTester.run('catch-potential-xss-vue', rule, {
           data () {
             return {
               message: DOMPurify.sanitize(rawHtmlInput)
+            }
+          }
+        })
+      </script>
+    `),
+    testCase(`
+      <template>
+        <div class="content">
+          <div v-html="testFunction()" />
+        </div>
+      </template>
+
+      <script>
+        import DOMPurify from 'dompurify';
+        const rawHtmlInput = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
+        export default Vue.extend({
+          name: 'HelloWorld',
+          data () {
+            return {
+              object: {
+                message: DOMPurify.sanitize(rawHtmlInput),
+                value: 3
+              }
+            }
+          },
+          methods: {
+            testFunction: function () {
+              const {message, value} = object
+
+              return message
             }
           }
         })
@@ -560,6 +568,36 @@ ruleTester.run('catch-potential-xss-vue', rule, {
           data () {
             return {
               message: rawHtmlInput
+            }
+          }
+        })
+      </script>
+    `),
+    testCase(`
+      <template>
+        <div class="content">
+          <div v-html="testFunction()" />
+        </div>
+      </template>
+
+      <script>
+        import DOMPurify from 'dompurify';
+        const rawHtmlInput = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
+        export default Vue.extend({
+          name: 'HelloWorld',
+          data () {
+            return {
+              object: {
+                message: DOMPurify.sanitize(rawHtmlInput),
+                value: 3
+              }
+            }
+          },
+          methods: {
+            testFunction: function () {
+              const {message, value} = object
+
+              return value
             }
           }
         })

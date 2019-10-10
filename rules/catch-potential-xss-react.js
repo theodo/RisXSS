@@ -23,11 +23,15 @@ const isDangerouslySetInnerHTMLAttribute = (node) => {
 }
 
 const create = context => {
-  let isVariableTrusted = {};
+  let options = {}
+  if(context.options.length) {
+    options = context.options[0]
+  }
+  let isVariableTrusted = utils.getTrustedCall(options);
   return {
     Program(node) {
       try {
-        isVariableTrusted = utils.checkProgramNode(node);
+        isVariableTrusted = utils.checkProgramNode(node, isVariableTrusted);
       } catch (error) {
         context.report(node, `${utils.ERROR_MESSAGE} \n ${error.stack}`);
       }
