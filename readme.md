@@ -2,7 +2,7 @@
 
 Eradicate all XSS flaws of your React or Vue application using a single ESLint rule.
 
-![Example](https://media.giphy.com/media/kyF8BJQIlATkUNMpdk/giphy.gif)
+![Example](assets/risxss-demo.gif)
 
 ## How to install RisXSS ?
 
