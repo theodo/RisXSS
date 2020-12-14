@@ -7,15 +7,15 @@ const ruleTester = avaRuleTester(test, {
     ecmaVersion: 2018,
     sourceType: 'module',
     ecmaFeatures: {
-      jsx: true
-    }
-  }
+      jsx: true,
+    },
+  },
 });
 
 function testCase(code) {
   return {
     code,
-    errors: [{ ruleId: 'catch-potential-xss-react' }]
+    errors: [{ ruleId: 'catch-potential-xss-react' }],
   };
 }
 
@@ -311,5 +311,5 @@ ruleTester.run('catch-potential-xss-react', rule, {
         );
       };
     `),
-  ]
+  ],
 });

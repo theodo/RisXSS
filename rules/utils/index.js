@@ -1,10 +1,10 @@
 'use-strict';
 
-const ERROR_MESSAGE = "The linter couldn't lint the file properly, please open an issue on the RisXSS repo. \n The error is : ";
+const ERROR_MESSAGE = 'The linter couldn\'t lint the file properly, please open an issue on the RisXSS repo. \n The error is : ';
 
 const get = require('lodash.get');
 const union = require('lodash.union');
-const cloneDeep = require('lodash.clonedeep')
+const cloneDeep = require('lodash.clonedeep');
 
 const isLibraryTrusted = (source) => {
   return source === 'dompurify';
@@ -17,8 +17,8 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
   }
   switch (get(currentNode, 'type', '')) {
     case 'Program' :
-      for(const nextNode of currentNode.body) {
-        checkNode(nextNode, isVariableTrusted)
+      for (const nextNode of currentNode.body) {
+        checkNode(nextNode, isVariableTrusted);
       }
       break;
     // Declarations
@@ -27,16 +27,16 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
       for (const specifier of specifiers) {
         const name = get(specifier, 'local.name', '');
         if (name !== '') {
-          updateIsVariableTrusted(isVariableTrusted, name, {value: isLibraryTrusted(source.value), dependsOn: []});
+          updateIsVariableTrusted(isVariableTrusted, name, { value: isLibraryTrusted(source.value), dependsOn: [] });
         }
       }
       break;
     case 'ExportDefaultDeclaration':
-      checkNode(currentNode.declaration, isVariableTrusted)
+      checkNode(currentNode.declaration, isVariableTrusted);
       break;
     case 'VariableDeclaration':
-      for(const nextNode of currentNode.declarations) {
-        checkNode(nextNode, isVariableTrusted)
+      for (const nextNode of currentNode.declarations) {
+        checkNode(nextNode, isVariableTrusted);
       }
       break;
     case 'VariableDeclarator':
@@ -45,13 +45,17 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
     case 'FunctionDeclaration':
       checkNode(currentNode.body, isVariableTrusted);
       if (currentNode.id) {
-        updateIsVariableTrusted(isVariableTrusted, currentNode.id.name, checkReturnsInStatement(currentNode.body, isVariableTrusted));
+        updateIsVariableTrusted(
+          isVariableTrusted,
+          currentNode.id.name,
+          checkReturnsInStatement(currentNode.body, isVariableTrusted),
+        );
       }
       break;
     // Statements and Clauses
     case 'BlockStatement':
-      for(const nextNode of currentNode.body) {
-        checkNode(nextNode, isVariableTrusted)
+      for (const nextNode of currentNode.body) {
+        checkNode(nextNode, isVariableTrusted);
       }
       break;
     case 'IfStatement':
@@ -59,13 +63,13 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
       checkNode(currentNode.alternate, isVariableTrusted);
       break;
     case 'SwitchStatement':
-      for(const switchCase of currentNode.cases) {
-        checkNode(switchCase, isVariableTrusted)
+      for (const switchCase of currentNode.cases) {
+        checkNode(switchCase, isVariableTrusted);
       }
       break;
     case 'SwitchCase':
-      for(const consequent of currentNode.consequent) {
-        checkNode(consequent, isVariableTrusted)
+      for (const consequent of currentNode.consequent) {
+        checkNode(consequent, isVariableTrusted);
       }
       break;
     case 'TryStatement':
@@ -80,14 +84,18 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
     case 'ForStatement':
     case 'ForInStatement':
     case 'ForOfStatement':
-      checkNode(currentNode.body, isVariableTrusted)
+      checkNode(currentNode.body, isVariableTrusted);
       break;
     case 'ExpressionStatement':
       return checkNode(currentNode.expression, isVariableTrusted, variableNameToBeAssigned);
     // Expressions
     case 'AssignmentExpression':
       const variableName = getNameFromExpression(currentNode.left);
-      updateIsVariableTrusted(isVariableTrusted, variableName, checkNode(currentNode.right, isVariableTrusted, variableName));
+      updateIsVariableTrusted(
+        isVariableTrusted,
+        variableName,
+        checkNode(currentNode.right, isVariableTrusted, variableName),
+      );
       break;
     case 'ArrayExpression':
       return checkArrayExpression(currentNode, isVariableTrusted);
@@ -98,30 +106,30 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
       checkNode(currentNode.body, isVariableTrusted);
       return checkReturnsInStatement(currentNode.body, isVariableTrusted);
     case 'SequenceExpression':
-      for(const nextNode of currentNode.expressions) {
-        checkNode(nextNode, isVariableTrusted)
+      for (const nextNode of currentNode.expressions) {
+        checkNode(nextNode, isVariableTrusted);
       }
       break;
     case 'ConditionalExpression':
       return mergeTrustObjects(
         checkNode(currentNode.consequent, isVariableTrusted),
-        checkNode(currentNode.alternate, isVariableTrusted)
+        checkNode(currentNode.alternate, isVariableTrusted),
       );
     case 'CallExpression':
-      return {value: undefined, dependsOn: [getNameFromExpression(currentNode)]};
+      return { value: undefined, dependsOn: [getNameFromExpression(currentNode)] };
     case 'MemberExpression':
-      return {value: undefined, dependsOn: [getNameFromMemberExpression(currentNode)]};
+      return { value: undefined, dependsOn: [getNameFromMemberExpression(currentNode)] };
     // Miscellaneous
     case 'Literal':
       if (currentNode.value === '' || currentNode.value === null) {
-        return {value: true, dependsOn: []};
+        return { value: true, dependsOn: [] };
       }
-      return {value: false, dependsOn: []};
+      return { value: false, dependsOn: [] };
     case 'Identifier':
-      return {value: undefined, dependsOn: [currentNode.name]};
+      return { value: undefined, dependsOn: [currentNode.name] };
     // Pattern (to be done)
     default:
-      return {value: undefined, dependsOn: []};
+      return { value: undefined, dependsOn: [] };
   }
 };
 
@@ -129,7 +137,11 @@ const checkVariableDeclarator = (node, isVariableTrusted) => {
   switch (get(node, 'id.type', '')) {
     case 'Identifier' :
       const variableName = get(node, 'id.name', '');
-      updateIsVariableTrusted(isVariableTrusted, variableName, checkNode(get(node, 'init', null), isVariableTrusted, variableName));
+      updateIsVariableTrusted(
+        isVariableTrusted,
+        variableName,
+        checkNode(get(node, 'init', null), isVariableTrusted, variableName),
+      );
       break;
     case 'ObjectPattern':
       const objectName = getNameFromExpression(get(node, 'init', null));
@@ -137,20 +149,24 @@ const checkVariableDeclarator = (node, isVariableTrusted) => {
         return;
       }
       const properties = get(node, 'id.properties', []);
-      for(const property of properties) {
+      for (const property of properties) {
         const propertyName = get(property, 'key.name', null);
         if (propertyName) {
-          updateIsVariableTrusted(isVariableTrusted, propertyName, {value: undefined, dependsOn: [`${objectName}.${propertyName}`]});
+          updateIsVariableTrusted(
+            isVariableTrusted,
+            propertyName,
+            { value: undefined, dependsOn: [`${objectName}.${propertyName}`] },
+          );
         }
       }
       break;
   }
-}
+};
 
 const checkArrayExpression = (node, isVariableTrusted) => {
-  let returnedTrustObject = {value: true, dependsOn: []};
+  let returnedTrustObject = { value: true, dependsOn: [] };
   const elements = get(node, 'elements', []);
-  for(const element of elements) {
+  for (const element of elements) {
     let elementTrustObject = checkNode(element, isVariableTrusted);
     returnedTrustObject = mergeTrustObjects(returnedTrustObject, elementTrustObject);
   }
@@ -159,13 +175,13 @@ const checkArrayExpression = (node, isVariableTrusted) => {
 };
 
 const checkObjectExpression = (node, isVariableTrusted, variableNameToBeAssigned) => {
-  let returnedTrustObject = {value: true, dependsOn: []};
+  let returnedTrustObject = { value: true, dependsOn: [] };
   const properties = get(node, 'properties', []);
-  for(const property of properties) {
+  for (const property of properties) {
     if (property.type === 'SpreadElement' || property.type === 'ExperimentalSpreadProperty') {
       continue;
     }
-    if(!get(property, 'key', false) || !get(property, 'value', false)) {
+    if (!get(property, 'key', false) || !get(property, 'value', false)) {
       continue;
     }
     let propertyVariableName;
@@ -175,7 +191,7 @@ const checkObjectExpression = (node, isVariableTrusted, variableNameToBeAssigned
       propertyVariableName = `${variableNameToBeAssigned}.${getNameFromExpression(property.key)}`;
     }
     let propertyTrustObject = checkNode(property.value, isVariableTrusted, propertyVariableName);
-    updateIsVariableTrusted(isVariableTrusted, propertyVariableName, propertyTrustObject)
+    updateIsVariableTrusted(isVariableTrusted, propertyVariableName, propertyTrustObject);
     returnedTrustObject = mergeTrustObjects(returnedTrustObject, propertyTrustObject);
   }
 
@@ -183,7 +199,7 @@ const checkObjectExpression = (node, isVariableTrusted, variableNameToBeAssigned
 };
 
 const checkReturnsInStatement = (currentNode, isVariableTrusted) => {
-  let returnedTrustObject = {value: true, dependsOn: []};
+  let returnedTrustObject = { value: true, dependsOn: [] };
   if (!currentNode) {
     return returnedTrustObject;
   }
@@ -191,10 +207,10 @@ const checkReturnsInStatement = (currentNode, isVariableTrusted) => {
     case 'ReturnStatement':
       return checkNode(currentNode.argument, isVariableTrusted);
     case 'BlockStatement':
-      for(const consequent of currentNode.body) {
+      for (const consequent of currentNode.body) {
         returnedTrustObject = mergeTrustObjects(
           returnedTrustObject,
-          checkReturnsInStatement(consequent, isVariableTrusted)
+          checkReturnsInStatement(consequent, isVariableTrusted),
         );
         if (returnedTrustObject.value === false) {
           return returnedTrustObject;
@@ -204,17 +220,17 @@ const checkReturnsInStatement = (currentNode, isVariableTrusted) => {
     case 'IfStatement':
       return mergeTrustObjects(
         checkReturnsInStatement(currentNode.consequent, isVariableTrusted),
-        checkReturnsInStatement(currentNode.alternate, isVariableTrusted)
+        checkReturnsInStatement(currentNode.alternate, isVariableTrusted),
       );
     case 'DoWhileStatement':
     case 'WhileStatement':
     case 'ForStatement':
       return checkReturnsInStatement(currentNode.body, isVariableTrusted);
     case 'SwitchStatement':
-      for(const switchCase of currentNode.cases) {
+      for (const switchCase of currentNode.cases) {
         returnedTrustObject = mergeTrustObjects(
           returnedTrustObject,
-          checkReturnsInStatement(switchCase, isVariableTrusted)
+          checkReturnsInStatement(switchCase, isVariableTrusted),
         );
         if (returnedTrustObject.value === false) {
           return returnedTrustObject;
@@ -222,10 +238,10 @@ const checkReturnsInStatement = (currentNode, isVariableTrusted) => {
       }
       return returnedTrustObject;
     case 'SwitchCase':
-      for(const consequent of currentNode.consequent) {
+      for (const consequent of currentNode.consequent) {
         returnedTrustObject = mergeTrustObjects(
           returnedTrustObject,
-          checkReturnsInStatement(consequent, isVariableTrusted)
+          checkReturnsInStatement(consequent, isVariableTrusted),
         );
         if (returnedTrustObject.value === false) {
           return returnedTrustObject;
@@ -233,9 +249,10 @@ const checkReturnsInStatement = (currentNode, isVariableTrusted) => {
       }
       return returnedTrustObject;
     default:
-      return returnedTrustObject;;
+      return returnedTrustObject;
+      ;
   }
-}
+};
 
 const getNameFromExpression = (expression) => {
   switch (get(expression, 'type', '')) {
@@ -248,7 +265,7 @@ const getNameFromExpression = (expression) => {
     case 'CallExpression':
       return getNameFromExpression(expression.callee);
   }
-}
+};
 
 const getNameFromMemberExpression = (memberExpression) => {
   const { object, property } = memberExpression;
@@ -262,13 +279,13 @@ const getNameFromMemberExpression = (memberExpression) => {
       objectName = object.name;
       break;
     case 'MemberExpression':
-      objectName = getNameFromMemberExpression(object)
+      objectName = getNameFromMemberExpression(object);
       break;
   }
   switch (get(property, 'type', '')) {
     case 'Literal':
       // if the value is a string we are trying to access the property of an object, if not the value will be a number to access index of array
-      if(typeof(property.value) === 'string') {
+      if (typeof (property.value) === 'string') {
         propertyName = property.value;
       }
       break;
@@ -281,8 +298,8 @@ const getNameFromMemberExpression = (memberExpression) => {
     return objectName;
   }
 
-  return `${objectName}.${propertyName}`
-}
+  return `${objectName}.${propertyName}`;
+};
 
 const mergeTrustObjects = (firstObject, secondObject) => {
   if (!firstObject || !secondObject) {
@@ -304,10 +321,10 @@ const mergeTrustObjects = (firstObject, secondObject) => {
   results.dependsOn = union(firstObject.dependsOn, secondObject.dependsOn);
 
   return results;
-}
+};
 
 const updateIsVariableTrusted = (isVariableTrusted, variableName, isAssignementTrusted) => {
-  if(!get(isVariableTrusted, variableName, undefined)) {
+  if (!get(isVariableTrusted, variableName, undefined)) {
     isVariableTrusted[variableName] = isAssignementTrusted;
   } else {
     isVariableTrusted[variableName] = mergeTrustObjects(isVariableTrusted[variableName], isAssignementTrusted);
@@ -325,29 +342,29 @@ const isVariableSafe = (variableName, isVariableTrusted, alreadySeenVariables) =
   }
   alreadySeenVariables.push(variableName);
   for (const nextVariableToCheck of trustObject.dependsOn) {
-    if(!isVariableSafe(nextVariableToCheck, isVariableTrusted, alreadySeenVariables)) {
+    if (!isVariableSafe(nextVariableToCheck, isVariableTrusted, alreadySeenVariables)) {
       return false;
     }
   }
 
   return true;
-}
+};
 
 const getTrustedCall = (options) => {
-  let trustedCalls = {'DOMPurify.sanitize': {value: true, dependsOn: []}}
+  let trustedCalls = { 'DOMPurify.sanitize': { value: true, dependsOn: [] } };
   for (callName of get(options, 'trustedCalls', [])) {
-    trustedCalls[callName] = {value: true, dependsOn: []};
+    trustedCalls[callName] = { value: true, dependsOn: [] };
   }
 
   return trustedCalls;
-}
+};
 
 const checkProgramNode = (node, isVariableTrusted) => {
   let newIsVariableTrusted = cloneDeep(isVariableTrusted);
   checkNode(node, newIsVariableTrusted);
 
   return newIsVariableTrusted;
-}
+};
 
 module.exports = {
   ERROR_MESSAGE,
@@ -356,13 +373,13 @@ module.exports = {
       context.report({
         loc: { line: 1, column: 0 },
         message:
-          'Use the latest vue-eslint-parser. See also https://vuejs.github.io/eslint-plugin-vue/user-guide/#what-is-the-use-the-latest-vue-eslint-parser-error'
+          'Use the latest vue-eslint-parser. See also https://vuejs.github.io/eslint-plugin-vue/user-guide/#what-is-the-use-the-latest-vue-eslint-parser-error',
       });
       return {};
     }
     return context.parserServices.defineTemplateBodyVisitor(
       templateBodyVisitor,
-      scriptVisitor
+      scriptVisitor,
     );
   },
   getNameFromExpression,

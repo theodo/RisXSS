@@ -2,7 +2,7 @@
 
 const utils = require('./utils');
 const get = require('lodash.get');
-const cloneDeep = require('lodash.clonedeep')
+const cloneDeep = require('lodash.clonedeep');
 
 const DANGEROUS_MESSAGE = 'XSS potentially found: use of v-html.';
 
@@ -27,15 +27,15 @@ const postProcessVariablesForVue = (isVariableTrusted) => {
     }
   }
 
-  return newIsVariableTrusted
-}
+  return newIsVariableTrusted;
+};
 
 const checkVueExportDefaultDeclaration = (node, isVariableTrusted) => {
   if (get(node, 'declaration.type', '') !== 'CallExpression') {
-    return isVariableTrusted
+    return isVariableTrusted;
   }
   if (utils.getNameFromExpression(get(node, 'declaration.callee', '')) !== 'Vue.extend') {
-    return isVariableTrusted
+    return isVariableTrusted;
   }
   const callArguments = get(node, 'declaration.arguments', []);
   if (!callArguments.length) {
@@ -47,12 +47,12 @@ const checkVueExportDefaultDeclaration = (node, isVariableTrusted) => {
   newIsVariableTrusted = postProcessVariablesForVue(newIsVariableTrusted);
 
   return newIsVariableTrusted;
-}
+};
 
 const create = context => {
-  let options = {}
-  if(context.options.length) {
-    options = context.options[0]
+  let options = {};
+  if (context.options.length) {
+    options = context.options[0];
   }
   let isVariableTrusted = utils.getTrustedCall(options);
   // The script visitor is called first. Then the template visitor
@@ -68,7 +68,7 @@ const create = context => {
               const { expression } = value;
               if (expression && expression !== null) {
                 const variableName = utils.getNameFromExpression(expression);
-                if(!utils.isVariableSafe(variableName, isVariableTrusted, [])) {
+                if (!utils.isVariableSafe(variableName, isVariableTrusted, [])) {
                   context.report(node, DANGEROUS_MESSAGE);
                 }
               } else {
@@ -109,6 +109,6 @@ module.exports = {
   create,
   meta: {
     type: 'suggestion',
-    fixable: 'code'
-  }
+    fixable: 'code',
+  },
 };

@@ -8,7 +8,7 @@ const DANGEROUS_MESSAGE =
 
 const isInnerHTMLObjectExpressionSafe = (objectExpression, isVariableTrusted) => {
   const htmlProperties = get(objectExpression, 'properties', []).filter(
-    property => get(property, 'key.name', '') === '__html'
+    property => get(property, 'key.name', '') === '__html',
   );
   if (htmlProperties.length !== 1) {
     return false;
@@ -20,12 +20,12 @@ const isInnerHTMLObjectExpressionSafe = (objectExpression, isVariableTrusted) =>
 
 const isDangerouslySetInnerHTMLAttribute = (node) => {
   return get(node, 'name.name', '') === 'dangerouslySetInnerHTML';
-}
+};
 
 const create = context => {
-  let options = {}
-  if(context.options.length) {
-    options = context.options[0]
+  let options = {};
+  if (context.options.length) {
+    options = context.options[0];
   }
   let isVariableTrusted = utils.getTrustedCall(options);
   return {
@@ -54,13 +54,13 @@ const create = context => {
               }
               break;
             case 'CallExpression':
-              if(!utils.isVariableSafe(utils.getNameFromExpression(expression), isVariableTrusted, [])) {
+              if (!utils.isVariableSafe(utils.getNameFromExpression(expression), isVariableTrusted, [])) {
                 context.report(node, DANGEROUS_MESSAGE);
               }
               break;
             default:
               const variableName = `${utils.getNameFromExpression(expression)}.__html`;
-              if(!utils.isVariableSafe(variableName, isVariableTrusted, [])) {
+              if (!utils.isVariableSafe(variableName, isVariableTrusted, [])) {
                 context.report(node, DANGEROUS_MESSAGE);
               }
           }
@@ -76,6 +76,6 @@ module.exports = {
   create,
   meta: {
     type: 'suggestion',
-    fixable: 'code'
-  }
+    fixable: 'code',
+  },
 };

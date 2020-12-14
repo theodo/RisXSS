@@ -45,8 +45,8 @@
     "files": [
       "test/*.js"
     ],
-	"require": [
-	  "esm"
-	]
+    "require": [
+      "esm"
+    ]
   }
 }

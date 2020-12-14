@@ -6,14 +6,14 @@ const ruleTester = avaRuleTester(test, {
   parser: require.resolve('vue-eslint-parser'),
   parserOptions: {
     ecmaVersion: 2018,
-    sourceType: 'module'
-  }
+    sourceType: 'module',
+  },
 });
 
 function testCase(code) {
   return {
     code,
-    errors: [{ ruleId: 'catch-potential-xss-vue' }]
+    errors: [{ ruleId: 'catch-potential-xss-vue' }],
   };
 }
 
@@ -612,6 +612,6 @@ ruleTester.run('catch-potential-xss-vue', rule, {
       <template>
         <p class="pagetitle__subtitle" v-html="nl2br(subtitle)" />
       </template>
-    `)
-  ]
+    `),
+  ],
 });
