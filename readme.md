@@ -1,5 +1,7 @@
 # 🛡RisXSS
 
+![Quality tests](https://github.com/theodo/RisXSS/workflows/Quality%20tests/badge.svg)
+
 Eradicate all XSS flaws of your React or Vue application using a single ESLint rule.
 
 ![Example](assets/risxss-demo.gif)
