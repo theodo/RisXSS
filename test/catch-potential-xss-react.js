@@ -22,6 +22,19 @@ function testCase(code) {
 ruleTester.run('catch-potential-xss-react', rule, {
   valid: [
     testCase(`
+			class Example extends React.Component {
+				render() {
+					const dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
+					const sanitizedText = { __html: DOMPurify.sanitize(dangerousHtml) };
+					return (
+						<div
+						dangerouslySetInnerHTML={sanitizedText}
+						/>
+					);
+				}
+			}
+    `),
+    testCase(`
       const Example = () => {
         let dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
         return (
@@ -173,6 +186,19 @@ ruleTester.run('catch-potential-xss-react', rule, {
     `),
   ],
   invalid: [
+    testCase(`
+			class Example extends React.Component {
+				render() {
+					const dangerousHtml = "<img src=x onerror='javascript:alert(1)'>";
+					const sanitizedText = { __html: dangerousHtml };
+					return (
+						<div
+						dangerouslySetInnerHTML={sanitizedText}
+						/>
+					);
+				}
+			}
+    `),
     testCase(`
       const Example = () => {
         return (

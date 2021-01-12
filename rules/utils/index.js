@@ -10,13 +10,22 @@ const isLibraryTrusted = (source) => {
   return source === 'dompurify';
 };
 
-// warning, this function mutate the array isVarialeTrusted
+// warning, this function mutate the array isVariableTrusted
 const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = '') => {
   if (!currentNode) {
     return;
   }
   switch (get(currentNode, 'type', '')) {
     case 'Program' :
+      for (const nextNode of currentNode.body) {
+        checkNode(nextNode, isVariableTrusted);
+      }
+      break;
+    // Classes
+    case 'ClassDeclaration':
+      checkNode(currentNode.body, isVariableTrusted);
+      break;
+    case 'ClassBody':
       for (const nextNode of currentNode.body) {
         checkNode(nextNode, isVariableTrusted);
       }
@@ -51,6 +60,9 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
           checkReturnsInStatement(currentNode.body, isVariableTrusted),
         );
       }
+      break;
+    case 'MethodDefinition':
+      checkNode(currentNode.value, isVariableTrusted);
       break;
     // Statements and Clauses
     case 'BlockStatement':
