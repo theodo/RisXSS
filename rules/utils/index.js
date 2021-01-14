@@ -41,6 +41,7 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
       }
       break;
     case 'ExportDefaultDeclaration':
+    case 'ExportNamedDeclaration':
       checkNode(currentNode.declaration, isVariableTrusted);
       break;
     case 'VariableDeclaration':
