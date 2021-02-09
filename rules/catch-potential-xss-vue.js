@@ -54,7 +54,7 @@ const create = context => {
   if (context.options.length) {
     options = context.options[0];
   }
-  let isVariableTrusted = utils.getTrustedCall(options);
+  let isVariableTrusted = utils.defaultTrustedCall;
   // The script visitor is called first. Then the template visitor
   return utils.defineTemplateBodyVisitor(
     context,
@@ -87,7 +87,7 @@ const create = context => {
     {
       Program(node) {
         try {
-          isVariableTrusted = utils.checkProgramNode(node, isVariableTrusted);
+          isVariableTrusted = utils.checkProgramNode(node, isVariableTrusted, options);
           isVariableTrusted = postProcessVariablesForVue(isVariableTrusted);
         } catch (error) {
           context.report(node, `${utils.ERROR_MESSAGE} \n ${error.stack}`);

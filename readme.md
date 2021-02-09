@@ -96,7 +96,7 @@ module.exports = {
 
 Sometimes you have your own rules to prevent XSS and you don't use DOMPurify.sanitize on your inputs. You can add your own function name to the RisXSS whitelist by passing them as options.
 
-:warning: We still recommand using DOMPurify to sanitize your inputs :warning:
+:warning: We still recommend using DOMPurify to sanitize your inputs :warning:
 
 ```javascript
 module.exports = {
@@ -110,7 +110,7 @@ module.exports = {
     plugins: ['vue', 'risxss'],   //  <<< add risxss in plugins
     rules: {
         'risxss/catch-potential-xss-vue': ['error', {
-            trustedCalls: ['mySanitizeFunction', 'sanitizeHelper.sanitize'] //  <<< define your anti XSS function here.
+            trustedLibraries: ['sanitizer', 'xss'] //  <<< define your anti XSS function here.
         }]
     }
 };

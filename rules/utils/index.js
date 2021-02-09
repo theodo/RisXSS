@@ -6,8 +6,11 @@ const get = require('lodash.get');
 const union = require('lodash.union');
 const cloneDeep = require('lodash.clonedeep');
 
+let OPTIONS = {};
+
 const isLibraryTrusted = (source) => {
-  return source === 'dompurify';
+  const trustedLibraries = OPTIONS.trustedLibraries || [];
+  return ['dompurify', ...trustedLibraries].includes(source);
 };
 
 // warning, this function mutate the array isVariableTrusted
@@ -263,7 +266,6 @@ const checkReturnsInStatement = (currentNode, isVariableTrusted) => {
       return returnedTrustObject;
     default:
       return returnedTrustObject;
-      ;
   }
 };
 
@@ -363,17 +365,11 @@ const isVariableSafe = (variableName, isVariableTrusted, alreadySeenVariables) =
   return true;
 };
 
-const getTrustedCall = (options) => {
-  let trustedCalls = { 'DOMPurify.sanitize': { value: true, dependsOn: [] } };
-  for (callName of get(options, 'trustedCalls', [])) {
-    trustedCalls[callName] = { value: true, dependsOn: [] };
-  }
+const defaultTrustedCall = { 'DOMPurify.sanitize': { value: true, dependsOn: [] } };
 
-  return trustedCalls;
-};
-
-const checkProgramNode = (node, isVariableTrusted) => {
+const checkProgramNode = (node, isVariableTrusted, options) => {
   let newIsVariableTrusted = cloneDeep(isVariableTrusted);
+  OPTIONS = options || OPTIONS;
   checkNode(node, newIsVariableTrusted);
 
   return newIsVariableTrusted;
@@ -399,5 +395,5 @@ module.exports = {
   isVariableSafe,
   checkProgramNode,
   checkNode,
-  getTrustedCall,
+  defaultTrustedCall,
 };

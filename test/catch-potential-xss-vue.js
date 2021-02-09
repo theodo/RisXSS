@@ -10,10 +10,11 @@ const ruleTester = avaRuleTester(test, {
   },
 });
 
-function testCase(code) {
+function testCase(code, options = []) {
   return {
     code,
     errors: [{ ruleId: 'catch-potential-xss-vue' }],
+    options,
   };
 }
 
@@ -47,6 +48,28 @@ ruleTester.run('catch-potential-xss-vue', rule, {
         }
       </script>
     `),
+    testCase(`
+      <template>
+        <div class="content">
+          <div v-html="message" />
+        </div>
+      </template>
+
+      <script>
+        import Sanitizer from 'sanitizer';
+        const rawHtmlInput = '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>';
+        export default {
+          name: 'HelloWorld',
+          data () {
+            return {
+              message: Sanitizer(rawHtmlInput)
+            }
+          }
+        }
+      </script>
+    `,
+      [{ trustedLibraries: ['sanitizer'] }]
+    ),
     testCase(`
       <template>
         <div class="content">

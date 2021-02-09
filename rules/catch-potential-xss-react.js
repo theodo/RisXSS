@@ -27,11 +27,11 @@ const create = context => {
   if (context.options.length) {
     options = context.options[0];
   }
-  let isVariableTrusted = utils.getTrustedCall(options);
+  let isVariableTrusted = utils.defaultTrustedCall;
   return {
     Program(node) {
       try {
-        isVariableTrusted = utils.checkProgramNode(node, isVariableTrusted);
+        isVariableTrusted = utils.checkProgramNode(node, isVariableTrusted, options);
       } catch (error) {
         context.report(node, `${utils.ERROR_MESSAGE} \n ${error.stack}`);
       }

@@ -12,15 +12,29 @@ const ruleTester = avaRuleTester(test, {
   },
 });
 
-function testCase(code) {
+function testCase(code, options = []) {
   return {
     code,
     errors: [{ ruleId: 'catch-potential-xss-react' }],
+    options,
   };
 }
 
 ruleTester.run('catch-potential-xss-react', rule, {
   valid: [
+    testCase(`
+      import { useSanitizedHtml } from 'hooks/useSanitizedHtml';
+			export const DesktopPostCard = ({ post }) => {
+        const sanitizedPostContent = useSanitizedHtml(post.content);
+        return (
+          <div dangerouslySetInnerHTML={{ __html: sanitizedPostContent }} />
+        );
+      };
+    `,
+      [{
+        trustedLibraries: ['hooks/useSanitizedHtml']
+      }]
+    ),
     testCase(`
 			export const DesktopPostCard = ({ post }) => {
         const sanitizedObject = { __html: DOMPurify.sanitize(post.content) };
@@ -353,5 +367,18 @@ ruleTester.run('catch-potential-xss-react', rule, {
         );
       };
     `),
+    testCase(`
+      import { useMyHook } from 'hooks/anotherHook';
+			export const DesktopPostCard = ({ post }) => {
+        const sanitizedPostContent = useMyHook(post.content);
+        return (
+          <div dangerouslySetInnerHTML={{ __html: sanitizedPostContent }} />
+        );
+      };
+    `,
+      [{
+        trustedLibraries: ['hooks/useSanitizedHtml']
+      }]
+    ),
   ],
 });
