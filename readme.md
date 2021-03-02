@@ -110,10 +110,19 @@ module.exports = {
     plugins: ['vue', 'risxss'],   //  <<< add risxss in plugins
     rules: {
         'risxss/catch-potential-xss-vue': ['error', {
-            trustedLibraries: ['sanitizer', 'xss'] //  <<< define your anti XSS function here.
+            trustedLibraries: ['xss'] //  <<< define your anti XSS function here.
         }]
     }
 };
+```
+
+```js
+// in your file
+import { sanitize } from 'xss';
+
+export const DesktopPostCard = ({ post }) => (
+  <div dangerouslySetInnerHTML={{ __html: sanitize(post.content) }} />
+);
 ```
 
 ## License
