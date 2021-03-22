@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-risxss",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Various XSS-hunter ESLint rules",
   "author": {
     "name": "Guillaume Klaus",
