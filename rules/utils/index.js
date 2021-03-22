@@ -66,7 +66,9 @@ const checkNode = (currentNode, isVariableTrusted, variableNameToBeAssigned = ''
       }
       break;
     case 'MethodDefinition':
-      checkNode(currentNode.value, isVariableTrusted);
+      const methodTrustObject = checkNode(currentNode.value, isVariableTrusted);
+      const methodName = currentNode.key.name;
+      updateIsVariableTrusted(isVariableTrusted, methodName, methodTrustObject);
       break;
     // Statements and Clauses
     case 'BlockStatement':

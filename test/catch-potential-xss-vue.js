@@ -5,7 +5,8 @@ import rule from '../rules/catch-potential-xss-vue';
 const ruleTester = avaRuleTester(test, {
   parser: require.resolve('vue-eslint-parser'),
   parserOptions: {
-    ecmaVersion: 2018,
+    parser: '@babel/eslint-parser',
+    ecmaVersion: 2020,
     sourceType: 'module',
   },
 });
@@ -13,7 +14,7 @@ const ruleTester = avaRuleTester(test, {
 function testCase(code, options = []) {
   return {
     code,
-    errors: [{ ruleId: 'catch-potential-xss-vue' }],
+    errors: [{ message: 'XSS potentially found: use of v-html.' }],
     options,
   };
 }
@@ -361,6 +362,22 @@ ruleTester.run('catch-potential-xss-vue', rule, {
         })
       </script>
     `),
+    testCase(`
+      <template>
+        <div v-html="testFunction()" />
+      </template>
+      <script>
+        import Vue from 'vue'
+        import Component from 'vue-class-component'
+        import DOMPurify from 'dompurify';
+        @Component({})
+        export default class CalendarDropdown extends Vue {
+          testFunction() {
+            return DOMPurify.sanitize('<a onmouseover=\"alert(document.cookie)\">Hover me!</a>')
+          }
+        }
+      </script>
+    `),
   ],
   invalid: [
     testCase(`
@@ -635,6 +652,21 @@ ruleTester.run('catch-potential-xss-vue', rule, {
       <template>
         <p class="pagetitle__subtitle" v-html="nl2br(subtitle)" />
       </template>
+    `),
+    testCase(`
+      <template>
+        <div v-html="testFunction()" />
+      </template>
+      <script>
+        import Vue from 'vue'
+        import Component from 'vue-class-component'
+        @Component({})
+        export default class CalendarDropdown extends Vue {
+          testFunction() {
+            return '<a onmouseover=\"alert(document.cookie)\">Hover me!</a>'
+          }
+        }
+      </script>
     `),
   ],
 });

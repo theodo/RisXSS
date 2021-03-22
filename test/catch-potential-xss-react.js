@@ -15,7 +15,7 @@ const ruleTester = avaRuleTester(test, {
 function testCase(code, options = []) {
   return {
     code,
-    errors: [{ ruleId: 'catch-potential-xss-react' }],
+    errors: [{ message: 'XSS potentially found, unsecure use of dangerouslySetInnerHTML' }],
     options,
   };
 }
